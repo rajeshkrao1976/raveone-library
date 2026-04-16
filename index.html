@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Raveone Library - Microsoft Fluent Experience</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PDF.js - Essential for Rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -54,6 +55,7 @@
 
     <!-- 2. MAIN APP -->
     <div id="dashboard-view" class="hidden min-h-screen flex flex-col md:flex-row">
+        <!-- Sidebar Navigation -->
         <nav class="w-full md:w-64 bg-white border-r border-[#edebe9] flex flex-col z-40">
             <div class="p-6 border-b border-[#f3f2f1] flex items-center gap-3">
                 <div class="bg-[#0078d4] p-1.5 rounded-sm shadow-sm"><i data-lucide="grid" class="text-white w-4 h-4"></i></div>
@@ -62,7 +64,7 @@
             <div class="flex-1 py-4 overflow-y-auto custom-scrollbar">
                 <div class="px-6 mb-2 text-[10px] font-bold text-[#a19f9d] uppercase tracking-widest">Main</div>
                 <button onclick="switchContext('library', this)" id="nav-home" class="sidebar-item active w-full flex items-center gap-3 px-6 py-2.5 text-sm hover:bg-[#f3f2f1] transition-colors text-left font-medium">
-                    <i data-lucide="home" class="w-4 h-4"></i> My Library
+                    <i data-lucide="home" class="w-4 h-4"></i> Home
                 </button>
                 <button onclick="switchContext('blog', this)" class="sidebar-item w-full flex items-center gap-3 px-6 py-2.5 text-sm hover:bg-[#f3f2f1] transition-colors text-left font-medium">
                     <i data-lucide="newspaper" class="w-4 h-4"></i> Insights Blog
@@ -72,15 +74,19 @@
                 </button>
                 
                 <div class="px-6 mt-8 mb-2 text-[10px] font-bold text-[#a19f9d] uppercase tracking-widest">Filters</div>
-                <button onclick="filterCategory('Wisdom')" class="w-full flex items-center gap-3 px-6 py-2.5 text-xs hover:text-[#0078d4] text-left text-[#605e5c]"><i data-lucide="heart" class="w-3.5 h-3.5"></i> Wisdom</button>
-                <button onclick="filterCategory('Business')" class="w-full flex items-center gap-3 px-6 py-2.5 text-xs hover:text-[#0078d4] text-left text-[#605e5c]"><i data-lucide="briefcase" class="w-3.5 h-3.5"></i> Business</button>
+                <button onclick="filterCategory('Wisdom')" class="w-full flex items-center gap-3 px-6 py-2.5 text-xs hover:text-[#0078d4] text-left text-[#605e5c] transition-colors">
+                    <i data-lucide="heart" class="w-3.5 h-3.5"></i> Wisdom Series
+                </button>
+                <button onclick="filterCategory('Business')" class="w-full flex items-center gap-3 px-6 py-2.5 text-xs hover:text-[#0078d4] text-left text-[#605e5c] transition-colors">
+                    <i data-lucide="briefcase" class="w-3.5 h-3.5"></i> Business Excellence
+                </button>
             </div>
             <div class="p-4 border-t border-[#f3f2f1]">
                 <div class="flex items-center gap-3 px-2 py-2">
                     <div class="w-8 h-8 bg-[#0078d4] text-white rounded-full flex items-center justify-center text-xs font-bold" id="user-initial">R</div>
                     <div class="flex-1 overflow-hidden">
                         <p id="user-display-short" class="text-xs font-bold truncate">User</p>
-                        <p id="membership-label" class="text-[9px] text-[#605e5c] font-bold uppercase tracking-tighter">Verified Reader</p>
+                        <p id="membership-label" class="text-[9px] text-[#605e5c] font-bold uppercase tracking-tighter">Reader</p>
                     </div>
                     <button onclick="handleLogout()" class="text-[#a19f9d] hover:text-[#a4262c] p-1 transition-colors"><i data-lucide="log-out" class="w-4 h-4"></i></button>
                 </div>
@@ -138,14 +144,14 @@
                 <div class="mt-auto pt-6 border-t border-white/20"><p class="text-[9px] font-bold uppercase opacity-60">GWS Authenticated</p><p class="text-xs font-semibold">rajesh@raveone.in</p></div>
             </div>
             <div class="flex-1 p-12 bg-white relative">
-                <button onclick="document.getElementById('sub-modal').classList.add('hidden')" class="absolute top-8 right-8 text-[#a19f9d] hover:text-[#323130]"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <button onclick="document.getElementById('sub-modal').classList.add('hidden')" class="absolute top-8 right-8 text-[#a19f9d] hover:text-[#323130] transition-colors"><i data-lucide="x" class="w-6 h-6"></i></button>
                 <h4 class="text-5xl font-light text-[#323130] mb-6 tracking-tighter">₹2,499<span class="text-sm font-bold text-[#a19f9d] uppercase ml-2">/month</span></h4>
                 <ul class="space-y-4 mb-12 text-sm text-[#605e5c]">
                     <li class="flex items-center gap-3"><i data-lucide="check" class="text-emerald-600 w-4 h-4"></i> Access to all 3 Premium eBooks</li>
                     <li class="flex items-center gap-3"><i data-lucide="check" class="text-emerald-600 w-4 h-4"></i> Unlock all Open Access archives</li>
                     <li class="flex items-center gap-3"><i data-lucide="check" class="text-emerald-600 w-4 h-4"></i> Multi-device reading synchronization</li>
                 </ul>
-                <button onclick="window.open('https://wa.me/911234567890?text=Monthly Pass Activation Request: ' + userEmail, '_blank')" class="ms-btn-primary w-full py-4 uppercase text-xs tracking-widest shadow-lg">Activate Pass Now</button>
+                <button onclick="window.open('https://wa.me/911234567890?text=Activation Request: ' + userEmail, '_blank')" class="ms-btn-primary w-full py-4 uppercase text-xs tracking-widest shadow-lg">Activate Pass Now</button>
             </div>
         </div>
     </div>
@@ -156,7 +162,7 @@
             <h2 id="detail-title" class="text-3xl font-bold mb-4 leading-tight">Book Title</h2>
             <p id="detail-desc" class="text-sm text-[#605e5c] mb-10 pb-10 border-b leading-relaxed"></p>
             <div id="detail-actions" class="space-y-4"></div>
-            <button onclick="closeDetail()" class="mt-8 text-[10px] text-slate-400 font-bold uppercase hover:underline w-full text-center transition-all">Close Window</button>
+            <button onclick="closeDetail()" class="mt-8 text-[10px] text-slate-400 font-bold uppercase hover:underline w-full text-center transition-all">Close Properties</button>
         </div>
     </div>
 
@@ -167,7 +173,7 @@
                 <p class="text-[10px] font-bold text-[#605e5c] uppercase mb-2">Transfer ₹<span id="pay-amt-display"></span> to UPI:</p>
                 <p class="text-lg font-bold font-mono">rajesh@upi</p>
             </div>
-            <input type="text" id="utr-input" placeholder="Transaction Reference / UTR Number" class="w-full px-4 py-3 border border-[#d2d0ce] outline-none text-sm mb-6 focus:border-[#0078d4] bg-[#faf9f8]">
+            <input type="text" id="utr-input" placeholder="UTR Number" class="w-full px-4 py-3 border border-[#d2d0ce] outline-none text-sm mb-6 focus:border-[#0078d4] bg-[#faf9f8]">
             <button onclick="notifyAdmin()" class="w-full bg-[#107c10] hover:bg-[#0b5a0b] text-white font-bold py-4 rounded-sm text-xs uppercase tracking-widest shadow-lg flex items-center justify-center gap-3">
                 <i data-lucide="send" class="w-4 h-4"></i> Submit Request
             </button>
@@ -185,18 +191,20 @@
                     <button onclick="setReaderTheme('night')" class="p-1.5 hover:bg-white rounded-sm"><div class="w-3 h-3 rounded-full bg-black border border-white/20"></div></button>
                 </div>
                 <div class="flex bg-[#f3f2f1] rounded-sm p-0.5 ml-2">
-                    <button onclick="zoomOut()" class="p-2 hover:bg-white rounded-sm text-[#605e5c]"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                    <button onclick="zoomOut()" class="p-2 hover:bg-white rounded-sm text-[#605e5c] transition-all"><i data-lucide="minus" class="w-4 h-4"></i></button>
                     <span id="zoom-level" class="px-4 text-[10px] font-bold text-[#605e5c] min-w-[50px] text-center">150%</span>
-                    <button onclick="zoomIn()" class="p-2 hover:bg-white rounded-sm text-[#605e5c]"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                    <button onclick="zoomIn()" class="p-2 hover:bg-white rounded-sm text-[#605e5c] transition-all"><i data-lucide="plus" class="w-4 h-4"></i></button>
                 </div>
             </div>
             <div class="flex items-center gap-3 bg-[#f3f2f1] px-5 py-2 rounded-sm font-mono text-[11px] mr-2">
                 <span id="current-page">1</span> <span class="text-slate-300">/</span> <span id="total-pages">?</span>
             </div>
         </div>
+        <!-- Scroll Surface -->
         <div class="flex-1 overflow-auto flex flex-col items-center py-16 px-8 bg-[#323130]" id="reader-scroll-container">
-            <div id="canvas-wrapper" class="relative shadow-2xl transition-all duration-300 origin-top shadow-black/80"></div>
+            <div id="canvas-wrapper" class="relative shadow-2xl transition-all duration-300 origin-top shadow-black/80 flex flex-col items-center"></div>
         </div>
+        <!-- Navigation Bar -->
         <div class="bg-white border-t p-3 flex items-center justify-center gap-12 shadow-md">
             <button onclick="prevPage()" id="prev-btn" class="flex items-center gap-3 px-10 py-3 hover:bg-[#f3f2f1] rounded-sm text-xs font-bold disabled:opacity-30 uppercase tracking-widest transition-all"><i data-lucide="chevron-left" class="w-4 h-4"></i> Previous</button>
             <div class="h-6 w-[1px] bg-[#edebe9]"></div>
@@ -209,7 +217,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbzUWEz5nDSNe_W4zKRj9uYACXHpOwCSX8-KSP9pFSwAjYOUW0l1hOH2woDtbFG6oZDX/exec"; // PASTE YOUR URL HERE
         const ADMIN = "rajesh@raveone.in";
 
-        // Global Reader Engine Worker
+        // PDF.js Worker Config (Crucial for loading)
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         let CATALOG = [], BLOGS = [], authBooks = [], isSubscribed = false;
@@ -238,7 +246,8 @@
             if (email === ADMIN && !API_URL) {
                 CATALOG = [
                     { ID: "b1", Title: "Seva, Shraddha, Siddhi - eBook by Rajesh Krishnamurthy Rao", Price: 499, Category: "Wisdom", Color: "#0078d4", ReadingTime: "2.5h", Type: "Premium", Description: "Guide to character." },
-                    { ID: "b2", Title: "Vedic SRK Framework  - by Rajesh Krishnamurthy Rao", Price: 899, Category: "Business", Color: "#d83b01", ReadingTime: "4h", Type: "Premium", Description: "MSME Roadmap." }
+                    { ID: "b2", Title: "Vedic SRK Framework  - by Rajesh Krishnamurthy Rao", Price: 899, Category: "Business", Color: "#d83b01", ReadingTime: "4h", Type: "Premium", Description: "MSME Roadmap." },
+                    { ID: "b3", Title: "ISO 9001_ Simplified for MSMEs — A Practical Guide to Achieving Quality Excellence-", Price: 699, Category: "Business", Color: "#107c10", ReadingTime: "3.5h", Type: "Premium", Description: "ISO simplified." }
                 ];
                 authBooks = CATALOG.map(b => b.Title); isSubscribed = true;
             } else if(API_URL) {
@@ -290,8 +299,8 @@
             const cont = document.getElementById('detail-actions');
             cont.innerHTML = hasAccess ? 
                 `<button onclick="openBook('${book.Title}', '${book.ID}')" class="w-full ms-btn-primary py-4 uppercase text-[10px] tracking-widest shadow-lg">Open Workspace</button>` :
-                `<button onclick="openPayModal('${book.Title}', ${book.Price})" class="w-full ms-btn-primary py-4 uppercase text-[10px] tracking-widest shadow-lg mb-4">Request License</button>
-                 <button onclick="openSubHub()" class="w-full bg-white border border-[#0078d4] text-[#0078d4] py-4 uppercase text-[10px] tracking-widest font-bold">Monthly Pass</button>`;
+                `<button onclick="openPayModal('${book.Title}', ${book.Price})" class="w-full ms-btn-primary py-4 uppercase text-[10px] tracking-widest shadow-lg mb-4">Verify License</button>
+                 <button onclick="openSubHub()" class="w-full bg-white border border-[#0078d4] text-[#0078d4] py-4 uppercase text-[10px] tracking-widest font-bold transition-all">Subscription Pass</button>`;
             document.getElementById('detail-modal').classList.remove('hidden');
             lucide.createIcons();
         }
@@ -306,37 +315,43 @@
             document.getElementById('detail-modal').classList.add('hidden');
             activeBookId = id; showView('reader-view');
             document.getElementById('reader-title').innerText = title;
-            document.getElementById('canvas-wrapper').innerHTML = '<div class="py-48 text-center text-[#a19f9d] text-[10px] font-bold uppercase tracking-widest">Authorized connection established...</div>';
+            const wrapper = document.getElementById('canvas-wrapper');
+            wrapper.innerHTML = '<div class="py-48 text-center text-[#a19f9d] text-[10px] font-bold uppercase tracking-widest animate-pulse">Decrypting secure container...</div>';
 
             if(userEmail === ADMIN && !API_URL) {
-                document.getElementById('canvas-wrapper').innerHTML = '<div class="bg-white p-20 border fluent-shadow max-w-sm text-center mx-auto">Admin Sandbox Access. Connect GWS API for real PDF data.</div>';
+                wrapper.innerHTML = '<div class="bg-white p-20 border fluent-shadow max-w-sm text-center mx-auto mt-20"><i data-lucide="shield-check" class="mx-auto mb-4 text-emerald-500"></i><p class="font-bold">Admin Sandbox Preview</p><p class="text-xs text-slate-500 mt-2">Connect your Google Apps Script URL to render production PDF data.</p></div>';
+                lucide.createIcons();
                 return;
             }
 
             try {
                 const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'fetchBook', email: userEmail, bookTitle: title }) });
                 const data = await resp.json();
-                if(data.base64) loadPDF(atob(data.base64));
-                else { alert("Encryption mismatch. Please contact admin."); closeReader(); }
-            } catch (err) { alert("Backend offline or connection timeout."); closeReader(); }
+                if(data.base64) {
+                    const bin = atob(data.base64);
+                    const uint8 = new Uint8Array(bin.length);
+                    for(let i=0; i<bin.length; i++) uint8[i] = bin.charCodeAt(i);
+                    loadPDF(uint8);
+                } else { 
+                    alert("Verification error or missing file."); 
+                    closeReader(); 
+                }
+            } catch (err) { alert("Backend offline. Please try again later."); closeReader(); }
         }
 
-        function loadPDF(bin) {
-            // Modern direct buffer conversion
-            const uint8 = new Uint8Array(bin.length);
-            for(let i=0; i<bin.length; i++) uint8[i] = bin.charCodeAt(i);
-            
+        function loadPDF(uint8) {
             pdfjsLib.getDocument({ data: uint8 }).promise.then(doc => {
                 pdfDoc = doc; document.getElementById('total-pages').innerText = doc.numPages;
                 const wrapper = document.getElementById('canvas-wrapper');
-                wrapper.innerHTML = ''; // Clear loaders
+                wrapper.innerHTML = ''; 
                 const canv = document.createElement('canvas');
                 canv.id = 'pdf-canvas';
                 wrapper.appendChild(canv);
                 
                 pageNum = parseInt(localStorage.getItem(`last_page_${userEmail}_${activeBookId}`)) || 1;
+                if (pageNum > pdfDoc.numPages) pageNum = 1;
                 renderPage(pageNum);
-            }).catch(e => { alert("Reader Engine Error"); closeReader(); });
+            }).catch(e => { alert("Reader Engine Initialization Failed"); closeReader(); });
         }
 
         function renderPage(num) {
@@ -347,7 +362,9 @@
                 if(!canv) return;
                 const ctx = canv.getContext('2d');
                 canv.height = vp.height; canv.width = vp.width;
-                page.render({ canvasContext: ctx, viewport: vp }).promise.then(() => { pageRendering = false; });
+                page.render({ canvasContext: ctx, viewport: vp }).promise.then(() => { 
+                    pageRendering = false; 
+                });
             });
             document.getElementById('current-page').innerText = num;
             document.getElementById('prev-btn').disabled = (num <= 1);
@@ -358,24 +375,24 @@
             updateBookmarkIcon();
         }
 
-        // Global Helpers
+        // Feature Helpers
         function openSubHub() { document.getElementById('sub-modal').classList.remove('hidden'); lucide.createIcons(); }
         function showView(v) { ['login-view','dashboard-view','reader-view'].forEach(id => document.getElementById(id)?.classList.add('hidden')); document.getElementById(v)?.classList.remove('hidden'); if(v==='dashboard-view') renderLibrary(); }
         function switchContext(c, el) { document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); document.getElementById('library-context').classList.toggle('hidden', c !== 'library'); document.getElementById('blog-context').classList.toggle('hidden', c !== 'blog'); }
         function closeReader() { pdfDoc = null; showView('dashboard-view'); }
         function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
         function closePayment() { document.getElementById('payment-modal').classList.add('hidden'); }
-        function zoomIn() { scale += 0.2; renderPage(pageNum); document.getElementById('zoom-level').innerText = Math.round(scale*100)+'%'; }
-        function zoomOut() { if(scale > 0.6) { scale -= 0.2; renderPage(pageNum); document.getElementById('zoom-level').innerText = Math.round(scale*100)+'%'; } }
+        function zoomIn() { scale += 0.2; if(scale > 4) scale = 4; renderPage(pageNum); document.getElementById('zoom-level').innerText = Math.round(scale*100)+'%'; }
+        function zoomOut() { scale -= 0.2; if(scale < 0.6) scale = 0.6; renderPage(pageNum); document.getElementById('zoom-level').innerText = Math.round(scale*100)+'%'; }
         function toggleBookmark() { const key = `bm_${userEmail}_${activeBookId}`; let bms = JSON.parse(localStorage.getItem(key)) || []; if(bms.includes(pageNum)) bms = bms.filter(p => p !== pageNum); else bms.push(pageNum); localStorage.setItem(key, JSON.stringify(bms)); updateBookmarkIcon(); }
         function updateBookmarkIcon() { const bms = JSON.parse(localStorage.getItem(`bm_${userEmail}_${activeBookId}`)) || []; document.getElementById('bookmark-icon').classList.toggle('fill-[#0078d4]', bms.includes(pageNum)); }
         function prevPage() { if(pageNum > 1 && !pageRendering) { pageNum--; renderPage(pageNum); document.getElementById('reader-scroll-container').scrollTop = 0; } }
         function nextPage() { if(pdfDoc && pageNum < pdfDoc.numPages && !pageRendering) { pageNum++; renderPage(pageNum); document.getElementById('reader-scroll-container').scrollTop = 0; } }
         function setReaderTheme(t) { const c = document.getElementById('pdf-canvas'); if(!c) return; c.className = ""; if(t !== 'original') c.classList.add('pdf-'+t); }
-        function toggleLoading(l) { document.getElementById('btn-spinner').classList.toggle('hidden', !l); document.getElementById('btn-text').innerText = l ? 'Authenticating...' : 'Next'; }
+        function toggleLoading(l) { document.getElementById('btn-spinner').classList.toggle('hidden', !l); document.getElementById('btn-text').innerText = l ? 'Validating...' : 'Next'; }
         function showError(m) { const e = document.getElementById('login-error'); document.getElementById('error-message').innerText = m; e.classList.remove('hidden'); }
-        function copyUPI() { navigator.clipboard.writeText('rajesh@upi'); alert("Copied."); }
-        function notifyAdmin() { window.open(`https://wa.me/911234567890?text=Verify Ref: ${document.getElementById('utr-input').value} User: ${userEmail}`, '_blank'); }
+        function copyUPI() { navigator.clipboard.writeText('rajesh@upi'); alert("Copied UPI ID."); }
+        function notifyAdmin() { window.open(`https://wa.me/911234567890?text=Activation Request Ref: ${document.getElementById('utr-input').value} User: ${userEmail}`, '_blank'); }
         function handleLogout() { localStorage.clear(); location.reload(); }
         function handleSearch() { renderLibrary(document.getElementById('search-input').value); }
         function filterCategory(c) { document.getElementById('nav-home').click(); renderLibrary(c); }
