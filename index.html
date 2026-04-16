@@ -2,35 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Raveone Library</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        * { font-family: 'Inter', system-ui, sans-serif; }
-        body { background: #f8f9fa; }
-        .book-card { transition: all 0.2s ease; cursor: pointer; }
+        * { font-family: system-ui, -apple-system, sans-serif; }
+        .book-card { transition: all 0.2s; cursor: pointer; }
         .book-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
         .pdf-sepia { filter: sepia(0.4) brightness(1.05) contrast(0.95); }
-        .pdf-night { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
+        .pdf-night { filter: invert(0.92) hue-rotate(180deg); }
         .spinner { animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .progress-bar { transition: width 0.3s; }
     </style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- LOGIN SCREEN -->
 <div id="login-view" class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-    <div class="max-w-md w-full bg-white rounded-xl shadow-xl overflow-hidden">
-        <div class="bg-blue-600 p-6 text-white">
-            <div class="flex items-center gap-3"><div class="bg-white/20 p-2 rounded-lg"><i data-lucide="library"></i></div><h1 class="text-xl font-semibold">Raveone Library</h1></div>
-            <p class="text-blue-100 text-sm mt-2">Access your digital collection</p>
+    <div class="max-w-md w-full bg-white rounded-xl shadow-xl">
+        <div class="bg-blue-600 p-6 text-white rounded-t-xl">
+            <h1 class="text-xl font-bold">Raveone Library</h1>
+            <p class="text-blue-100 text-sm">Sign in with your email</p>
         </div>
-        <div class="p-8">
-            <input type="email" id="email-input" placeholder="your@email.com" class="w-full px-4 py-3 border rounded-lg mb-4">
-            <div id="login-error" class="hidden bg-red-50 text-red-700 p-3 rounded-lg mb-4"></div>
+        <div class="p-6">
+            <input type="email" id="email-input" placeholder="your@email.com" class="w-full p-3 border rounded-lg mb-4">
+            <div id="login-error" class="hidden bg-red-50 text-red-700 p-3 rounded-lg mb-4 text-sm"></div>
             <button onclick="handleLogin()" id="login-btn" class="w-full bg-blue-600 text-white py-3 rounded-lg flex justify-center gap-2">
                 <span id="btn-text">Sign In</span>
                 <i id="btn-spinner" data-lucide="loader-2" class="hidden spinner w-5 h-5"></i>
@@ -39,149 +37,216 @@
     </div>
 </div>
 
-<!-- DASHBOARD (simplified, same as before but using fetch) -->
-<div id="dashboard-view" class="hidden min-h-screen">
-    <!-- Sidebar and main content – same as previous working version -->
-    <!-- For brevity, I'm including a compact but complete version below -->
+<!-- DASHBOARD -->
+<div id="dashboard-view" class="hidden min-h-screen bg-gray-50">
+    <div class="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0">
+        <h1 class="text-xl font-bold text-blue-600">Raveone Library</h1>
+        <div class="flex items-center gap-3">
+            <span id="pass-badge" class="text-xs px-3 py-1 rounded-full bg-gray-200">Pass: Inactive</span>
+            <button onclick="handleLogout()" class="text-red-500 text-sm">Logout</button>
+        </div>
+    </div>
+    <div class="p-4">
+        <input type="text" id="search-input" placeholder="Search books..." oninput="renderLibrary(this.value)" class="w-full p-3 border rounded-lg mb-4">
+        <div id="book-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+    </div>
+</div>
+
+<!-- READER -->
+<div id="reader-view" class="hidden fixed inset-0 bg-gray-900 z-50 flex flex-col">
+    <div class="bg-white p-3 flex justify-between items-center">
+        <button onclick="closeReader()" class="px-4 py-2 bg-gray-200 rounded-lg">← Exit</button>
+        <div class="flex gap-2">
+            <button onclick="zoomOut()" class="px-3 py-1 bg-gray-200 rounded">-</button>
+            <span id="zoom-level" class="px-3 py-1">100%</span>
+            <button onclick="zoomIn()" class="px-3 py-1 bg-gray-200 rounded">+</button>
+            <button onclick="setTheme('sepia')" class="px-3 py-1 bg-amber-100 rounded">Sepia</button>
+            <button onclick="setTheme('night')" class="px-3 py-1 bg-gray-800 text-white rounded">Dark</button>
+            <button onclick="setTheme('original')" class="px-3 py-1 bg-white border rounded">Light</button>
+        </div>
+        <div><span id="current-page">1</span> / <span id="total-pages">?</span></div>
+    </div>
+    <div class="flex-1 overflow-auto flex justify-center p-8" id="reader-container">
+        <canvas id="pdf-canvas" class="shadow-2xl"></canvas>
+    </div>
+    <div class="bg-white p-3 flex justify-center gap-4">
+        <button onclick="prevPage()" id="prev-btn" class="px-6 py-2 bg-gray-200 rounded disabled:opacity-50">◀ Previous</button>
+        <button onclick="nextPage()" id="next-btn" class="px-6 py-2 bg-gray-200 rounded disabled:opacity-50">Next ▶</button>
+    </div>
 </div>
 
 <script>
-// ========== CONFIGURATION ==========
-// Use the same origin for fetch – this will work when deployed
-const API_URL = window.location.href;  // Calls the same URL that served this page
-
-// PDF.js
-const pdfjsLib = window['pdfjs-dist/build/pdf'];
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-let CATALOG = [], BLOGS = [], authBooks = [], isSubscribed = false;
-let userEmail = localStorage.getItem('raveone_email') || '';
-let pdfDoc = null, pageNum = 1, activeBookId = "", activeBookTitle = "", currentScale = 1.4;
-
-// Helper: call backend using fetch
-async function apiCall(payload) {
-    const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-    return response.json();
-}
-
-// ========== LOGIN ==========
-async function handleLogin() {
-    const email = document.getElementById('email-input').value.trim().toLowerCase();
-    if (!email) return alert("Enter email");
-    toggleLoading(true);
-    try {
-        const data = await apiCall({ action: 'getLibrary', email: email });
-        if (data.error) throw new Error(data.error);
-        initFromData(email, data);
-    } catch (err) {
-        showError("Connection failed: " + err.message);
-    } finally {
-        toggleLoading(false);
+    // PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    // Global state
+    let CATALOG = [], BLOGS = [], authBooks = [], isSubscribed = false;
+    let userEmail = localStorage.getItem('raveone_email') || '';
+    let pdfDoc = null, pageNum = 1, activeBookId = "", currentScale = 1.2;
+    
+    // UI helpers
+    function showView(id) {
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('dashboard-view').classList.add('hidden');
+        document.getElementById('reader-view').classList.add('hidden');
+        document.getElementById(id).classList.remove('hidden');
     }
-}
-
-function initFromData(email, data) {
-    userEmail = email;
-    localStorage.setItem('raveone_email', email);
-    CATALOG = data.catalog || [];
-    BLOGS = data.blogs || [];
-    authBooks = data.authorizedTitles || [];
-    isSubscribed = data.isSubscribed || false;
-    renderLibrary();
-    showView('dashboard-view');
-}
-
-// ========== RENDER LIBRARY (simplified) ==========
-function renderLibrary(filter = "") {
-    const grid = document.getElementById('book-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
-    const filtered = CATALOG.filter(b => b.Title.toLowerCase().includes(filter.toLowerCase()));
-    filtered.forEach(book => {
-        const hasAccess = authBooks.includes(book.Title) || authBooks.includes("ALL") || isSubscribed;
-        const div = document.createElement('div');
-        div.className = "book-card bg-white rounded-xl p-4";
-        div.innerHTML = `<h3 class="font-bold">${book.Title}</h3><p>${hasAccess ? 'Available' : '₹'+book.Price}</p>`;
-        div.onclick = () => openBook(book.Title, book.ID);
-        grid.appendChild(div);
-    });
-}
-
-// ========== OPEN BOOK ==========
-async function openBook(title, id) {
-    activeBookId = id;
-    showView('reader-view');
-    document.getElementById('canvas-wrapper').innerHTML = '<div class="text-white text-center">Loading...</div>';
-    try {
-        const data = await apiCall({ action: 'fetchBook', email: userEmail, bookTitle: title });
-        if (!data.success) throw new Error(data.error);
-        const binary = atob(data.base64);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        loadPDF(bytes.buffer);
-    } catch (err) {
-        alert("Failed to load book: " + err.message);
-        closeReader();
+    
+    function toggleLoading(loading) {
+        const spinner = document.getElementById('btn-spinner');
+        const btnText = document.getElementById('btn-text');
+        if (loading) {
+            spinner.classList.remove('hidden');
+            btnText.innerText = 'Signing in...';
+        } else {
+            spinner.classList.add('hidden');
+            btnText.innerText = 'Sign In';
+        }
     }
-}
-
-function loadPDF(arrayBuffer) {
-    pdfjsLib.getDocument({ data: arrayBuffer }).promise.then(doc => {
-        pdfDoc = doc;
-        document.getElementById('total-pages').innerText = doc.numPages;
-        document.getElementById('canvas-wrapper').innerHTML = '<canvas id="pdf-canvas"></canvas>';
-        renderPage(1);
-    }).catch(err => { alert("PDF error: " + err.message); closeReader(); });
-}
-
-function renderPage(num) {
-    if (!pdfDoc) return;
-    pdfDoc.getPage(num).then(page => {
-        const viewport = page.getViewport({ scale: currentScale });
+    
+    function showError(msg) {
+        const errDiv = document.getElementById('login-error');
+        errDiv.innerText = msg;
+        errDiv.classList.remove('hidden');
+        setTimeout(() => errDiv.classList.add('hidden'), 5000);
+    }
+    
+    // Login: call backend using google.script.run
+    function handleLogin() {
+        const email = document.getElementById('email-input').value.trim().toLowerCase();
+        if (!email) return showError("Please enter email");
+        toggleLoading(true);
+        google.script.run
+            .withSuccessHandler(data => {
+                toggleLoading(false);
+                userEmail = email;
+                localStorage.setItem('raveone_email', email);
+                CATALOG = data.catalog || [];
+                BLOGS = data.blogs || [];
+                authBooks = data.authorizedTitles || [];
+                isSubscribed = data.isSubscribed || false;
+                const badge = document.getElementById('pass-badge');
+                badge.innerText = isSubscribed ? "✓ Active Pass" : "Inactive Pass";
+                badge.className = `text-xs px-3 py-1 rounded-full ${isSubscribed ? 'bg-green-100 text-green-700' : 'bg-gray-200'}`;
+                renderLibrary();
+                showView('dashboard-view');
+            })
+            .withFailureHandler(err => {
+                toggleLoading(false);
+                showError("Server error: " + err.message);
+            })
+            .getLibrary(email);
+    }
+    
+    function renderLibrary(filter = "") {
+        const grid = document.getElementById('book-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        const filtered = CATALOG.filter(b => b.Title.toLowerCase().includes(filter.toLowerCase()));
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">No books found</div>';
+            return;
+        }
+        filtered.forEach(book => {
+            const hasAccess = authBooks.includes(book.Title) || authBooks.includes("ALL") || isSubscribed || book.Type === 'Open';
+            const card = document.createElement('div');
+            card.className = "book-card bg-white rounded-xl border p-4 hover:shadow-lg";
+            card.onclick = () => openBook(book);
+            card.innerHTML = `
+                <div class="h-40 bg-gradient-to-br ${hasAccess ? 'from-blue-500 to-blue-700' : 'from-gray-400 to-gray-600'} rounded-lg flex items-center justify-center text-white text-4xl font-bold">${book.Title[0]}</div>
+                <h3 class="font-semibold mt-3 truncate">${book.Title}</h3>
+                <p class="text-sm text-gray-500 mt-1">${hasAccess ? 'Available' : '₹' + book.Price}</p>
+            `;
+            grid.appendChild(card);
+        });
+        lucide.createIcons();
+    }
+    
+    function openBook(book) {
+        activeBookId = book.ID;
+        showView('reader-view');
+        document.getElementById('reader-container').innerHTML = '<div class="text-white text-center py-20">Loading book...</div>';
+        google.script.run
+            .withSuccessHandler(data => {
+                const binary = atob(data.base64);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                loadPDF(bytes.buffer);
+            })
+            .withFailureHandler(err => {
+                alert("Failed to load book: " + err.message);
+                closeReader();
+            })
+            .fetchBook(userEmail, book.Title);
+    }
+    
+    function loadPDF(arrayBuffer) {
+        pdfjsLib.getDocument({ data: arrayBuffer }).promise.then(doc => {
+            pdfDoc = doc;
+            document.getElementById('total-pages').innerText = doc.numPages;
+            document.getElementById('reader-container').innerHTML = '<canvas id="pdf-canvas" class="shadow-2xl"></canvas>';
+            pageNum = 1;
+            renderPage(pageNum);
+        }).catch(err => {
+            alert("PDF error: " + err.message);
+            closeReader();
+        });
+    }
+    
+    function renderPage(num) {
+        if (!pdfDoc) return;
+        pdfDoc.getPage(num).then(page => {
+            const viewport = page.getViewport({ scale: currentScale });
+            const canvas = document.getElementById('pdf-canvas');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            const ctx = canvas.getContext('2d');
+            page.render({ canvasContext: ctx, viewport: viewport });
+            document.getElementById('current-page').innerText = num;
+            document.getElementById('prev-btn').disabled = (num <= 1);
+            document.getElementById('next-btn').disabled = (num >= pdfDoc.numPages);
+            // Save progress locally and to backend
+            const progress = Math.round((num / pdfDoc.numPages) * 100);
+            localStorage.setItem(`prog_${userEmail}_${activeBookId}`, progress);
+            google.script.run.saveProgress(userEmail, activeBookId, num, progress);
+        });
+    }
+    
+    function nextPage() { if (pdfDoc && pageNum < pdfDoc.numPages) { pageNum++; renderPage(pageNum); } }
+    function prevPage() { if (pageNum > 1) { pageNum--; renderPage(pageNum); } }
+    function zoomIn() { currentScale += 0.2; if (currentScale > 3) currentScale = 3; updateZoom(); }
+    function zoomOut() { currentScale -= 0.2; if (currentScale < 0.6) currentScale = 0.6; updateZoom(); }
+    function updateZoom() { document.getElementById('zoom-level').innerText = Math.round(currentScale*100)+'%'; if (pdfDoc) renderPage(pageNum); }
+    function setTheme(theme) {
         const canvas = document.getElementById('pdf-canvas');
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport });
-        document.getElementById('current-page').innerText = num;
-        document.getElementById('prev-btn').disabled = (num <= 1);
-        document.getElementById('next-btn').disabled = (num >= pdfDoc.numPages);
+        if (!canvas) return;
+        canvas.classList.remove('pdf-sepia', 'pdf-night');
+        if (theme === 'sepia') canvas.classList.add('pdf-sepia');
+        if (theme === 'night') canvas.classList.add('pdf-night');
+    }
+    function closeReader() { pdfDoc = null; showView('dashboard-view'); renderLibrary(); }
+    function handleLogout() { localStorage.clear(); location.reload(); }
+    
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+        if (userEmail) {
+            // Auto-login: call backend
+            google.script.run
+                .withSuccessHandler(data => {
+                    CATALOG = data.catalog || [];
+                    BLOGS = data.blogs || [];
+                    authBooks = data.authorizedTitles || [];
+                    isSubscribed = data.isSubscribed || false;
+                    renderLibrary();
+                    showView('dashboard-view');
+                })
+                .withFailureHandler(() => showView('login-view'))
+                .getLibrary(userEmail);
+        } else {
+            showView('login-view');
+        }
     });
-}
-
-function nextPage() { if (pdfDoc && pageNum < pdfDoc.numPages) { pageNum++; renderPage(pageNum); } }
-function prevPage() { if (pageNum > 1) { pageNum--; renderPage(pageNum); } }
-function closeReader() { pdfDoc = null; showView('dashboard-view'); }
-
-// ========== UI HELPERS ==========
-function showView(view) {
-    document.getElementById('login-view').classList.add('hidden');
-    document.getElementById('dashboard-view').classList.add('hidden');
-    document.getElementById('reader-view').classList.add('hidden');
-    document.getElementById(view).classList.remove('hidden');
-}
-function toggleLoading(l) { document.getElementById('btn-spinner').classList.toggle('hidden', !l); document.getElementById('btn-text').innerText = l ? 'Signing in...' : 'Sign In'; }
-function showError(msg) { const e = document.getElementById('login-error'); e.innerText = msg; e.classList.remove('hidden'); setTimeout(()=>e.classList.add('hidden'),3000); }
-
-// ========== INIT ==========
-document.addEventListener('DOMContentLoaded', () => {
-    lucide.createIcons();
-    if (userEmail) initFromData(userEmail, null); // Actually need to fetch, but we'll just show login
-    else showView('login-view');
-});
 </script>
-
-<!-- Quick and dirty dashboard HTML (add missing elements) -->
-<div id="dashboard-view" class="hidden">
-    <div class="p-4"><input type="text" id="search-input" placeholder="Search..." oninput="renderLibrary(this.value)" class="border p-2 w-full"></div>
-    <div id="book-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4"></div>
-</div>
-<div id="reader-view" class="hidden fixed inset-0 bg-gray-900 z-50 flex flex-col">
-    <div class="bg-white p-2 flex justify-between"><button onclick="closeReader()">Exit</button><div><button onclick="prevPage()">Prev</button><span id="current-page">1</span>/<span id="total-pages">?</span><button onclick="nextPage()">Next</button></div></div>
-    <div id="canvas-wrapper" class="flex-1 flex justify-center items-center bg-gray-900"></div>
-</div>
 </body>
 </html>
