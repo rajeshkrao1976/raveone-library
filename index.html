@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raveone Library</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Raveone Library – Enhanced</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -15,6 +15,8 @@
         .pdf-night { filter: invert(0.92) hue-rotate(180deg); }
         .spinner { animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .progress-bar { transition: width 0.3s; }
+        .bookmark-btn.active { color: #fbbf24; fill: #fbbf24; }
     </style>
 </head>
 <body>
@@ -33,13 +35,14 @@
                 <span id="btn-text">Sign In</span>
                 <i id="btn-spinner" data-lucide="loader-2" class="hidden spinner w-5 h-5"></i>
             </button>
+            <button onclick="showSwitchAccount()" class="w-full mt-2 text-sm text-gray-500 hover:text-gray-700">Switch account</button>
         </div>
     </div>
 </div>
 
 <!-- DASHBOARD -->
 <div id="dashboard-view" class="hidden min-h-screen bg-gray-50">
-    <div class="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0">
+    <div class="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-10">
         <h1 class="text-xl font-bold text-blue-600">Raveone Library</h1>
         <div class="flex items-center gap-3">
             <span id="pass-badge" class="text-xs px-3 py-1 rounded-full bg-gray-200">Pass: Inactive</span>
@@ -47,16 +50,36 @@
         </div>
     </div>
     <div class="p-4">
+        <!-- Continue Reading Section (Improved) -->
+        <div id="continue-section" class="hidden mb-8 bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-4 border-b bg-gray-50">
+                <h2 class="text-sm font-semibold text-gray-600">Continue Reading</h2>
+            </div>
+            <div id="continue-card" class="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition">
+                <div id="continue-cover" class="w-16 h-20 rounded-md bg-gradient-to-br flex items-center justify-center text-white text-2xl font-bold shadow-md"></div>
+                <div class="flex-1">
+                    <h3 id="continue-title" class="font-bold text-gray-800">Book Title</h3>
+                    <p id="continue-progress-text" class="text-xs text-gray-500 mt-1">Resume reading</p>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2"><div id="continue-progress-bar" class="bg-blue-600 h-1.5 rounded-full" style="width:0%"></div></div>
+                </div>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">Open</button>
+            </div>
+        </div>
+
         <input type="text" id="search-input" placeholder="Search books..." oninput="renderLibrary(this.value)" class="w-full p-3 border rounded-lg mb-4">
         <div id="book-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
     </div>
 </div>
 
-<!-- READER -->
+<!-- READER VIEW (with bookmark button) -->
 <div id="reader-view" class="hidden fixed inset-0 bg-gray-900 z-50 flex flex-col">
     <div class="bg-white p-3 flex justify-between items-center">
-        <button onclick="closeReader()" class="px-4 py-2 bg-gray-200 rounded-lg">← Exit</button>
-        <div class="flex gap-2">
+        <button onclick="closeReader()" class="px-4 py-2 bg-gray-200 rounded-lg flex items-center gap-2">← Exit</button>
+        <div class="flex gap-2 items-center">
+            <button id="bookmark-btn" onclick="toggleBookmark()" class="p-2 rounded-lg hover:bg-gray-100 transition" title="Bookmark this page">
+                <i data-lucide="bookmark" class="w-5 h-5"></i>
+            </button>
+            <div class="h-6 w-px bg-gray-300 mx-1"></div>
             <button onclick="zoomOut()" class="px-3 py-1 bg-gray-200 rounded">-</button>
             <span id="zoom-level" class="px-3 py-1">100%</span>
             <button onclick="zoomIn()" class="px-3 py-1 bg-gray-200 rounded">+</button>
@@ -76,68 +99,69 @@
 </div>
 
 <script>
-    // PDF.js worker
+    // ========== CONFIGURATION ==========
+    // IMPORTANT: Replace this with your actual Apps Script web app URL
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzYlmgtB8NADYtkYPMt7oZd6HAlVaKKEEgL8adClLSZTZIDYbWA8gaLNBx-zH52_Mof/exec';
+    
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     
     // Global state
     let CATALOG = [], BLOGS = [], authBooks = [], isSubscribed = false;
+    let userProgress = {};       // { bookId: { lastPage, progress } }
+    let userBookmarks = {};      // { bookId: [pageNumbers] }
     let userEmail = localStorage.getItem('raveone_email') || '';
-    let pdfDoc = null, pageNum = 1, activeBookId = "", currentScale = 1.2;
+    let pdfDoc = null, pageNum = 1, activeBookId = "", activeBookTitle = "", currentScale = 1.2, currentTheme = "original";
     
-    // UI helpers
-    function showView(id) {
-        document.getElementById('login-view').classList.add('hidden');
-        document.getElementById('dashboard-view').classList.add('hidden');
-        document.getElementById('reader-view').classList.add('hidden');
-        document.getElementById(id).classList.remove('hidden');
+    // Helper: call backend
+    async function apiCall(payload) {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
     }
     
-    function toggleLoading(loading) {
-        const spinner = document.getElementById('btn-spinner');
-        const btnText = document.getElementById('btn-text');
-        if (loading) {
-            spinner.classList.remove('hidden');
-            btnText.innerText = 'Signing in...';
-        } else {
-            spinner.classList.add('hidden');
-            btnText.innerText = 'Sign In';
-        }
-    }
-    
-    function showError(msg) {
-        const errDiv = document.getElementById('login-error');
-        errDiv.innerText = msg;
-        errDiv.classList.remove('hidden');
-        setTimeout(() => errDiv.classList.add('hidden'), 5000);
-    }
-    
-    // Login: call backend using google.script.run
-    function handleLogin() {
+    // ========== LOGIN ==========
+    async function handleLogin() {
         const email = document.getElementById('email-input').value.trim().toLowerCase();
         if (!email) return showError("Please enter email");
         toggleLoading(true);
-        google.script.run
-            .withSuccessHandler(data => {
-                toggleLoading(false);
-                userEmail = email;
-                localStorage.setItem('raveone_email', email);
-                CATALOG = data.catalog || [];
-                BLOGS = data.blogs || [];
-                authBooks = data.authorizedTitles || [];
-                isSubscribed = data.isSubscribed || false;
-                const badge = document.getElementById('pass-badge');
-                badge.innerText = isSubscribed ? "✓ Active Pass" : "Inactive Pass";
-                badge.className = `text-xs px-3 py-1 rounded-full ${isSubscribed ? 'bg-green-100 text-green-700' : 'bg-gray-200'}`;
-                renderLibrary();
-                showView('dashboard-view');
-            })
-            .withFailureHandler(err => {
-                toggleLoading(false);
-                showError("Server error: " + err.message);
-            })
-            .getLibrary(email);
+        try {
+            const data = await apiCall({ action: 'getLibrary', email: email });
+            if (!data.success) throw new Error(data.error);
+            userEmail = email;
+            localStorage.setItem('raveone_email', email);
+            CATALOG = data.catalog || [];
+            BLOGS = data.blogs || [];
+            authBooks = data.authorizedTitles || [];
+            isSubscribed = data.isSubscribed || false;
+            userProgress = data.progress || {};
+            userBookmarks = data.bookmarks || {};
+            updateBadge();
+            renderLibrary();
+            updateContinueSection();
+            showView('dashboard-view');
+        } catch (err) {
+            showError("Connection failed: " + err.message);
+        } finally {
+            toggleLoading(false);
+        }
     }
     
+    function showSwitchAccount() {
+        localStorage.removeItem('raveone_email');
+        location.reload();
+    }
+    
+    function updateBadge() {
+        const badge = document.getElementById('pass-badge');
+        badge.innerText = isSubscribed ? "✓ Active Pass" : "Inactive Pass";
+        badge.className = `text-xs px-3 py-1 rounded-full ${isSubscribed ? 'bg-green-100 text-green-700' : 'bg-gray-200'}`;
+    }
+    
+    // ========== LIBRARY RENDERING ==========
     function renderLibrary(filter = "") {
         const grid = document.getElementById('book-grid');
         if (!grid) return;
@@ -149,35 +173,50 @@
         }
         filtered.forEach(book => {
             const hasAccess = authBooks.includes(book.Title) || authBooks.includes("ALL") || isSubscribed || book.Type === 'Open';
+            const progress = userProgress[book.ID]?.progress || 0;
             const card = document.createElement('div');
             card.className = "book-card bg-white rounded-xl border p-4 hover:shadow-lg";
-            card.onclick = () => openBook(book);
+            card.onclick = () => showDetail(book);
             card.innerHTML = `
-                <div class="h-40 bg-gradient-to-br ${hasAccess ? 'from-blue-500 to-blue-700' : 'from-gray-400 to-gray-600'} rounded-lg flex items-center justify-center text-white text-4xl font-bold">${book.Title[0]}</div>
+                <div class="h-40 bg-gradient-to-br ${hasAccess ? 'from-blue-500 to-blue-700' : 'from-gray-400 to-gray-600'} rounded-lg flex items-center justify-center text-white text-4xl font-bold relative">
+                    ${book.Title[0].toUpperCase()}
+                    ${hasAccess && progress > 0 ? `<div class="absolute bottom-0 left-0 right-0 h-1 bg-white/30"><div class="progress-bar h-full bg-emerald-400" style="width: ${progress}%"></div></div>` : ''}
+                </div>
                 <h3 class="font-semibold mt-3 truncate">${book.Title}</h3>
-                <p class="text-sm text-gray-500 mt-1">${hasAccess ? 'Available' : '₹' + book.Price}</p>
+                <p class="text-sm text-gray-500 mt-1">${hasAccess ? (progress > 0 ? `${progress}% read` : 'Available') : '₹' + book.Price}</p>
             `;
             grid.appendChild(card);
         });
         lucide.createIcons();
     }
     
-    function openBook(book) {
+    function showDetail(book) {
+        const hasAccess = authBooks.includes(book.Title) || authBooks.includes("ALL") || isSubscribed || book.Type === 'Open';
+        if (hasAccess) {
+            openBook(book);
+        } else {
+            alert(`This book requires a license (₹${book.Price}). Please subscribe or purchase.`);
+        }
+    }
+    
+    // ========== PDF READER ==========
+    async function openBook(book) {
         activeBookId = book.ID;
+        activeBookTitle = book.Title;
         showView('reader-view');
-        document.getElementById('reader-container').innerHTML = '<div class="text-white text-center py-20">Loading book...</div>';
-        google.script.run
-            .withSuccessHandler(data => {
-                const binary = atob(data.base64);
-                const bytes = new Uint8Array(binary.length);
-                for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-                loadPDF(bytes.buffer);
-            })
-            .withFailureHandler(err => {
-                alert("Failed to load book: " + err.message);
-                closeReader();
-            })
-            .fetchBook(userEmail, book.Title);
+        document.getElementById('reader-container').innerHTML = '<div class="text-white text-center py-20"><i data-lucide="loader-2" class="spinner w-12 h-12 mx-auto mb-4"></i><p>Loading book...</p></div>';
+        lucide.createIcons();
+        try {
+            const data = await apiCall({ action: 'fetchBook', email: userEmail, bookTitle: book.Title });
+            if (!data.success) throw new Error(data.error);
+            const binary = atob(data.base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            loadPDF(bytes.buffer);
+        } catch (err) {
+            alert("Failed to load book: " + err.message);
+            closeReader();
+        }
     }
     
     function loadPDF(arrayBuffer) {
@@ -185,10 +224,13 @@
             pdfDoc = doc;
             document.getElementById('total-pages').innerText = doc.numPages;
             document.getElementById('reader-container').innerHTML = '<canvas id="pdf-canvas" class="shadow-2xl"></canvas>';
-            pageNum = 1;
+            // Restore last page from synced progress
+            pageNum = userProgress[activeBookId]?.lastPage || 1;
+            if (pageNum > doc.numPages) pageNum = 1;
             renderPage(pageNum);
+            updateBookmarkIcon();
         }).catch(err => {
-            alert("PDF error: " + err.message);
+            alert("PDF render error: " + err.message);
             closeReader();
         });
     }
@@ -205,44 +247,126 @@
             document.getElementById('current-page').innerText = num;
             document.getElementById('prev-btn').disabled = (num <= 1);
             document.getElementById('next-btn').disabled = (num >= pdfDoc.numPages);
-            // Save progress locally and to backend
+            // Save progress
             const progress = Math.round((num / pdfDoc.numPages) * 100);
+            userProgress[activeBookId] = { lastPage: num, progress: progress };
             localStorage.setItem(`prog_${userEmail}_${activeBookId}`, progress);
-            google.script.run.saveProgress(userEmail, activeBookId, num, progress);
+            apiCall({ action: 'saveProgress', email: userEmail, bookId: activeBookId, pageNum: num, progress: progress }).catch(console.log);
+            updateContinueSection(); // refresh dashboard continue card
         });
     }
     
     function nextPage() { if (pdfDoc && pageNum < pdfDoc.numPages) { pageNum++; renderPage(pageNum); } }
     function prevPage() { if (pageNum > 1) { pageNum--; renderPage(pageNum); } }
-    function zoomIn() { currentScale += 0.2; if (currentScale > 3) currentScale = 3; updateZoom(); }
-    function zoomOut() { currentScale -= 0.2; if (currentScale < 0.6) currentScale = 0.6; updateZoom(); }
+    function zoomIn() { currentScale = Math.min(3, currentScale+0.2); updateZoom(); }
+    function zoomOut() { currentScale = Math.max(0.6, currentScale-0.2); updateZoom(); }
     function updateZoom() { document.getElementById('zoom-level').innerText = Math.round(currentScale*100)+'%'; if (pdfDoc) renderPage(pageNum); }
     function setTheme(theme) {
+        currentTheme = theme;
         const canvas = document.getElementById('pdf-canvas');
         if (!canvas) return;
         canvas.classList.remove('pdf-sepia', 'pdf-night');
         if (theme === 'sepia') canvas.classList.add('pdf-sepia');
         if (theme === 'night') canvas.classList.add('pdf-night');
     }
-    function closeReader() { pdfDoc = null; showView('dashboard-view'); renderLibrary(); }
-    function handleLogout() { localStorage.clear(); location.reload(); }
     
-    // Initial load
+    // ========== BOOKMARKS ==========
+    async function toggleBookmark() {
+        if (!pdfDoc) return;
+        let bookmarks = userBookmarks[activeBookId] || [];
+        if (bookmarks.includes(pageNum)) {
+            bookmarks = bookmarks.filter(p => p !== pageNum);
+        } else {
+            bookmarks.push(pageNum);
+            bookmarks.sort((a,b) => a-b);
+        }
+        userBookmarks[activeBookId] = bookmarks;
+        updateBookmarkIcon();
+        // Save to backend
+        await apiCall({ action: 'saveBookmarks', email: userEmail, bookId: activeBookId, bookmarks: bookmarks }).catch(console.log);
+        alert(bookmarks.includes(pageNum) ? "Bookmark added" : "Bookmark removed");
+    }
+    
+    function updateBookmarkIcon() {
+        const btn = document.getElementById('bookmark-btn');
+        if (!btn) return;
+        const bookmarks = userBookmarks[activeBookId] || [];
+        if (bookmarks.includes(pageNum)) {
+            btn.classList.add('text-yellow-500');
+            btn.querySelector('i')?.setAttribute('data-lucide', 'bookmark-check');
+        } else {
+            btn.classList.remove('text-yellow-500');
+            btn.querySelector('i')?.setAttribute('data-lucide', 'bookmark');
+        }
+        lucide.createIcons();
+    }
+    
+    // ========== CONTINUE READING SECTION ==========
+    function updateContinueSection() {
+        const section = document.getElementById('continue-section');
+        // Find the most recent book with progress
+        let lastBookId = null, lastProgress = 0, lastPage = 0;
+        for (const [bookId, prog] of Object.entries(userProgress)) {
+            if (prog.progress > lastProgress) {
+                lastProgress = prog.progress;
+                lastBookId = bookId;
+                lastPage = prog.lastPage;
+            }
+        }
+        if (!lastBookId || lastProgress === 0) {
+            section.classList.add('hidden');
+            return;
+        }
+        const book = CATALOG.find(b => b.ID === lastBookId);
+        if (!book) return;
+        section.classList.remove('hidden');
+        document.getElementById('continue-title').innerText = book.Title;
+        document.getElementById('continue-progress-text').innerHTML = `${lastProgress}% complete • Page ${lastPage}`;
+        document.getElementById('continue-progress-bar').style.width = `${lastProgress}%`;
+        const coverDiv = document.getElementById('continue-cover');
+        coverDiv.style.background = `linear-gradient(135deg, ${book.Color || '#0078d4'}, ${book.Color || '#0078d4'}dd)`;
+        coverDiv.innerText = book.Title[0].toUpperCase();
+        document.getElementById('continue-card').onclick = () => openBook(book);
+    }
+    
+    // ========== UI HELPERS ==========
+    function showView(viewId) {
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('dashboard-view').classList.add('hidden');
+        document.getElementById('reader-view').classList.add('hidden');
+        document.getElementById(viewId).classList.remove('hidden');
+        if (viewId === 'dashboard-view') {
+            renderLibrary();
+            updateContinueSection();
+        }
+    }
+    
+    function closeReader() { pdfDoc = null; showView('dashboard-view'); }
+    function handleLogout() { localStorage.clear(); location.reload(); }
+    function toggleLoading(loading) {
+        const spinner = document.getElementById('btn-spinner');
+        const btnText = document.getElementById('btn-text');
+        if (loading) {
+            spinner.classList.remove('hidden');
+            btnText.innerText = 'Signing in...';
+        } else {
+            spinner.classList.add('hidden');
+            btnText.innerText = 'Sign In';
+        }
+    }
+    function showError(msg) {
+        const errDiv = document.getElementById('login-error');
+        errDiv.innerText = msg;
+        errDiv.classList.remove('hidden');
+        setTimeout(() => errDiv.classList.add('hidden'), 5000);
+    }
+    
+    // Auto-login if email exists
     document.addEventListener('DOMContentLoaded', () => {
         lucide.createIcons();
         if (userEmail) {
-            // Auto-login: call backend
-            google.script.run
-                .withSuccessHandler(data => {
-                    CATALOG = data.catalog || [];
-                    BLOGS = data.blogs || [];
-                    authBooks = data.authorizedTitles || [];
-                    isSubscribed = data.isSubscribed || false;
-                    renderLibrary();
-                    showView('dashboard-view');
-                })
-                .withFailureHandler(() => showView('login-view'))
-                .getLibrary(userEmail);
+            // Attempt auto-login
+            handleLogin(); // will call api with stored email
         } else {
             showView('login-view');
         }
