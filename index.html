@@ -3,1001 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Raveone Library - Digital Reading Platform</title>
+    <title>Raveone Library</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
-        
-        * {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        }
-        
-        body {
-            background-color: #f8f9fa;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-        
-        /* Card animations */
-        .book-card {
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .book-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-        }
-        
-        /* Reader themes */
-        .pdf-sepia {
-            filter: sepia(0.4) brightness(1.05) contrast(0.95);
-        }
-        
-        .pdf-night {
-            filter: invert(0.92) hue-rotate(180deg) brightness(0.95);
-        }
-        
-        /* Loading spinner */
-        .spinner {
-            animation: spin 0.8s linear infinite;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Modal animations */
-        .modal-enter {
-            animation: fadeSlideIn 0.2s ease-out;
-        }
-        
-        @keyframes fadeSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Progress bar */
-        .progress-bar {
-            transition: width 0.3s ease;
-        }
-        
-        /* Blog content styling */
-        .blog-content {
-            line-height: 1.8;
-            font-size: 1rem;
-        }
-        
-        .blog-content p {
-            margin-bottom: 1.25rem;
-        }
-        
-        .blog-content h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-        }
-        
-        .blog-content ul, .blog-content ol {
-            margin-left: 1.5rem;
-            margin-bottom: 1.25rem;
-        }
-        
-        .blog-content li {
-            margin-bottom: 0.5rem;
-        }
-        
-        /* Reader container */
-        #canvas-wrapper canvas {
-            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-            border-radius: 4px;
-        }
+        * { font-family: 'Inter', system-ui, sans-serif; }
+        body { background-color: #f8f9fa; -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        .book-card { transition: all 0.2s ease; cursor: pointer; }
+        .book-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+        .pdf-sepia { filter: sepia(0.4) brightness(1.05) contrast(0.95); }
+        .pdf-night { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
+        .spinner { animation: spin 0.8s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .modal-enter { animation: fadeSlideIn 0.2s ease-out; }
+        @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .progress-bar { transition: width 0.3s ease; }
+        .blog-content { line-height: 1.8; font-size: 1rem; }
+        .blog-content p { margin-bottom: 1.25rem; }
+        .blog-content h2 { font-size: 1.5rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; }
+        .blog-content ul, .blog-content ol { margin-left: 1.5rem; margin-bottom: 1.25rem; }
+        .blog-content li { margin-bottom: 0.5rem; }
+        #canvas-wrapper canvas { box-shadow: 0 8px 30px rgba(0,0,0,0.2); border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN SCREEN -->
-    <div id="login-view" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
-        <div class="max-w-md w-full bg-white rounded-xl shadow-xl overflow-hidden">
-            <div class="bg-blue-600 p-6 text-white">
-                <div class="flex items-center gap-3">
-                    <div class="bg-white/20 p-2 rounded-lg">
-                        <i data-lucide="library" class="w-6 h-6"></i>
-                    </div>
-                    <h1 class="text-xl font-semibold">Raveone Library</h1>
-                </div>
-                <p class="text-blue-100 text-sm mt-2">Access your digital collection</p>
+<!-- LOGIN SCREEN -->
+<div id="login-view" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+    <div class="max-w-md w-full bg-white rounded-xl shadow-xl overflow-hidden">
+        <div class="bg-blue-600 p-6 text-white">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2 rounded-lg"><i data-lucide="library" class="w-6 h-6"></i></div>
+                <h1 class="text-xl font-semibold">Raveone Library</h1>
             </div>
-            
-            <div class="p-8">
-                <div class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email address</label>
-                        <input type="email" id="email-input" placeholder="you@example.com" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
-                    </div>
-                    
-                    <div id="login-error" class="hidden bg-red-50 text-red-700 p-4 rounded-lg border border-red-200">
-                        <p id="error-message" class="text-sm"></p>
-                    </div>
-                    
-                    <button onclick="handleLogin()" id="login-btn" 
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2">
-                        <span id="btn-text">Sign In</span>
-                        <i id="btn-spinner" data-lucide="loader-2" class="hidden spinner w-5 h-5"></i>
-                    </button>
-                    
-                    <p class="text-center text-xs text-gray-500">
-                        Secure access • Books synced across devices
-                    </p>
+            <p class="text-blue-100 text-sm mt-2">Access your digital collection</p>
+        </div>
+        <div class="p-8">
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email address</label>
+                    <input type="email" id="email-input" placeholder="you@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
                 </div>
+                <div id="login-error" class="hidden bg-red-50 text-red-700 p-4 rounded-lg border border-red-200"><p id="error-message" class="text-sm"></p></div>
+                <button onclick="handleLogin()" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2">
+                    <span id="btn-text">Sign In</span>
+                    <i id="btn-spinner" data-lucide="loader-2" class="hidden spinner w-5 h-5"></i>
+                </button>
+                <p class="text-center text-xs text-gray-500">Secure access • Books synced across devices</p>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- MAIN DASHBOARD -->
-    <div id="dashboard-view" class="hidden min-h-screen flex flex-col lg:flex-row">
-        <!-- Sidebar -->
-        <aside class="w-full lg:w-72 bg-white border-r border-gray-200 flex flex-col fixed lg:relative z-30 lg:z-auto transition-transform duration-300" id="sidebar">
-            <div class="p-6 border-b border-gray-100">
-                <div class="flex items-center gap-3">
-                    <div class="bg-blue-600 p-2 rounded-lg">
-                        <i data-lucide="book-open" class="text-white w-5 h-5"></i>
-                    </div>
-                    <span class="font-bold text-gray-800">Raveone Library</span>
-                </div>
+<!-- MAIN DASHBOARD -->
+<div id="dashboard-view" class="hidden min-h-screen flex flex-col lg:flex-row">
+    <aside class="w-full lg:w-72 bg-white border-r border-gray-200 flex flex-col fixed lg:relative z-30 lg:z-auto">
+        <div class="p-6 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2 rounded-lg"><i data-lucide="book-open" class="text-white w-5 h-5"></i></div>
+                <span class="font-bold text-gray-800">Raveone Library</span>
             </div>
-            
-            <nav class="flex-1 p-4 space-y-1">
-                <button onclick="switchContext('library', this)" id="nav-home" 
-                        class="sidebar-item active w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-all text-left font-medium">
-                    <i data-lucide="home" class="w-5 h-5"></i> Home
+        </div>
+        <nav class="flex-1 p-4 space-y-1">
+            <button onclick="switchContext('library', this)" id="nav-home" class="sidebar-item active w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-all text-left font-medium">
+                <i data-lucide="home" class="w-5 h-5"></i> Home
+            </button>
+            <button onclick="switchContext('blog', this)" class="sidebar-item w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-all text-left font-medium">
+                <i data-lucide="newspaper" class="w-5 h-5"></i> Insights Blog
+            </button>
+            <button onclick="openSubHub()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-emerald-700 hover:bg-emerald-50 transition-all font-medium">
+                <i data-lucide="crown" class="w-5 h-5"></i> Subscription Pass
+            </button>
+            <div class="pt-6 mt-6 border-t border-gray-100">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mb-2">Categories</p>
+                <button onclick="filterCategory('Wisdom')" class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all text-sm">
+                    <i data-lucide="heart" class="w-4 h-4"></i> Wisdom Series
                 </button>
-                <button onclick="switchContext('blog', this)" 
-                        class="sidebar-item w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-all text-left font-medium">
-                    <i data-lucide="newspaper" class="w-5 h-5"></i> Insights Blog
+                <button onclick="filterCategory('Business')" class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all text-sm">
+                    <i data-lucide="briefcase" class="w-4 h-4"></i> Business Excellence
                 </button>
-                <button onclick="openSubHub()" 
-                        class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-emerald-700 hover:bg-emerald-50 transition-all font-medium">
-                    <i data-lucide="crown" class="w-5 h-5"></i> Subscription Pass
-                </button>
-                
-                <div class="pt-6 mt-6 border-t border-gray-100">
-                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mb-2">Categories</p>
-                    <button onclick="filterCategory('Wisdom')" 
-                            class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all text-sm">
-                        <i data-lucide="heart" class="w-4 h-4"></i> Wisdom Series
-                    </button>
-                    <button onclick="filterCategory('Business')" 
-                            class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all text-sm">
-                        <i data-lucide="briefcase" class="w-4 h-4"></i> Business Excellence
-                    </button>
-                </div>
-            </nav>
-            
-            <div class="p-4 border-t border-gray-100">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold" id="user-initial">R</div>
-                    <div class="flex-1 min-w-0">
-                        <p id="user-display-short" class="text-sm font-semibold truncate">User</p>
-                        <p id="membership-label" class="text-xs text-gray-500">Verified Reader</p>
-                    </div>
-                    <button onclick="handleLogout()" class="p-2 text-gray-400 hover:text-red-600 transition-colors">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
-                    </button>
-                </div>
             </div>
-        </aside>
-        
-        <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto">
-            <!-- Header -->
-            <header class="sticky top-0 bg-white/95 backdrop-blur-md border-b border-gray-200 px-6 py-4 flex items-center justify-between z-20">
-                <div class="flex items-center gap-4 flex-1 max-w-2xl">
-                    <i data-lucide="search" class="text-gray-400 w-5 h-5"></i>
-                    <input type="text" id="search-input" oninput="handleSearch()" 
-                           placeholder="Search books and articles..." 
-                           class="flex-1 bg-transparent outline-none text-gray-700 placeholder-gray-400">
+        </nav>
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold" id="user-initial">R</div>
+                <div class="flex-1 min-w-0">
+                    <p id="user-display-short" class="text-sm font-semibold truncate">User</p>
+                    <p id="membership-label" class="text-xs text-gray-500">Verified Reader</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <span id="pass-badge" class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600">Pass: Inactive</span>
-                </div>
-            </header>
-            
-            <div class="p-6 lg:p-8">
-                <!-- Library View -->
-                <div id="library-context">
-                    <!-- Continue Reading Section -->
-                    <div id="continue-section" class="hidden mb-8">
-                        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Continue Reading</h2>
-                        <div id="continue-card" class="group bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 flex items-center justify-between cursor-pointer hover:shadow-md transition-all">
-                            <div class="flex items-center gap-5">
-                                <div class="bg-blue-600 p-4 rounded-xl text-white">
-                                    <i data-lucide="play" class="w-6 h-6 fill-white"></i>
-                                </div>
-                                <div>
-                                    <h3 id="continue-title" class="font-bold text-gray-800 text-lg">Book Title</h3>
-                                    <p id="continue-progress-text" class="text-sm text-gray-500">Resume reading</p>
-                                </div>
-                            </div>
-                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">
-                                Open
-                            </button>
+                <button onclick="handleLogout()" class="p-2 text-gray-400 hover:text-red-600 transition-colors"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+            </div>
+        </div>
+    </aside>
+    <main class="flex-1 overflow-y-auto">
+        <header class="sticky top-0 bg-white/95 backdrop-blur-md border-b border-gray-200 px-6 py-4 flex items-center justify-between z-20">
+            <div class="flex items-center gap-4 flex-1 max-w-2xl">
+                <i data-lucide="search" class="text-gray-400 w-5 h-5"></i>
+                <input type="text" id="search-input" oninput="handleSearch()" placeholder="Search books and articles..." class="flex-1 bg-transparent outline-none text-gray-700 placeholder-gray-400">
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="pass-badge" class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600">Pass: Inactive</span>
+            </div>
+        </header>
+        <div class="p-6 lg:p-8">
+            <div id="library-context">
+                <div id="continue-section" class="hidden mb-8">
+                    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Continue Reading</h2>
+                    <div id="continue-card" class="group bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 flex items-center justify-between cursor-pointer hover:shadow-md transition-all">
+                        <div class="flex items-center gap-5">
+                            <div class="bg-blue-600 p-4 rounded-xl text-white"><i data-lucide="play" class="w-6 h-6 fill-white"></i></div>
+                            <div><h3 id="continue-title" class="font-bold text-gray-800 text-lg">Book Title</h3><p id="continue-progress-text" class="text-sm text-gray-500">Resume reading</p></div>
                         </div>
-                    </div>
-                    
-                    <!-- Library Header -->
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">Digital Collection</h2>
-                        <span id="owned-count" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-600">0 items</span>
-                    </div>
-                    
-                    <!-- Book Grid -->
-                    <div id="book-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        <!-- Books will be loaded here -->
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium">Open</button>
                     </div>
                 </div>
-                
-                <!-- Blog View -->
-                <div id="blog-context" class="hidden">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Insights & Articles</h2>
-                    <div id="blog-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Blog posts will be loaded here -->
-                    </div>
-                </div>
+                <div class="flex items-center justify-between mb-6"><h2 class="text-2xl font-bold text-gray-800">Digital Collection</h2><span id="owned-count" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-600">0 items</span></div>
+                <div id="book-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
             </div>
-        </main>
-    </div>
+            <div id="blog-context" class="hidden"><h2 class="text-2xl font-bold text-gray-800 mb-6">Insights & Articles</h2><div id="blog-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div></div>
+        </div>
+    </main>
+</div>
 
-    <!-- READER VIEW -->
-    <div id="reader-view" class="hidden fixed inset-0 bg-gray-900 z-50 flex flex-col">
-        <!-- Reader Header -->
-        <div class="bg-white border-b border-gray-200 p-3 flex items-center justify-between">
-            <button onclick="closeReader()" class="px-4 py-2 hover:bg-gray-100 rounded-lg flex items-center gap-2 text-gray-700 transition-colors">
-                <i data-lucide="arrow-left" class="w-5 h-5"></i> Exit
-            </button>
-            <div class="flex items-center gap-2">
-                <div class="flex bg-gray-100 rounded-lg p-1">
-                    <button onclick="setReaderTheme('original')" class="p-2 rounded-md hover:bg-white transition-all" title="Light Mode">
-                        <div class="w-4 h-4 rounded-full bg-white border border-gray-300"></div>
-                    </button>
-                    <button onclick="setReaderTheme('sepia')" class="p-2 rounded-md hover:bg-white transition-all" title="Sepia">
-                        <div class="w-4 h-4 rounded-full bg-amber-100 border border-gray-300"></div>
-                    </button>
-                    <button onclick="setReaderTheme('night')" class="p-2 rounded-md hover:bg-white transition-all" title="Dark Mode">
-                        <div class="w-4 h-4 rounded-full bg-gray-900 border border-gray-300"></div>
-                    </button>
-                </div>
-                <div class="flex bg-gray-100 rounded-lg p-1">
-                    <button onclick="zoomOut()" class="p-2 rounded-md hover:bg-white transition-all">
-                        <i data-lucide="minus" class="w-4 h-4"></i>
-                    </button>
-                    <span id="zoom-level" class="px-3 text-xs font-medium flex items-center">150%</span>
-                    <button onclick="zoomIn()" class="p-2 rounded-md hover:bg-white transition-all">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                    </button>
-                </div>
+<!-- READER VIEW -->
+<div id="reader-view" class="hidden fixed inset-0 bg-gray-900 z-50 flex flex-col">
+    <div class="bg-white border-b border-gray-200 p-3 flex items-center justify-between">
+        <button onclick="closeReader()" class="px-4 py-2 hover:bg-gray-100 rounded-lg flex items-center gap-2 text-gray-700"><i data-lucide="arrow-left" class="w-5 h-5"></i> Exit</button>
+        <div class="flex items-center gap-2">
+            <div class="flex bg-gray-100 rounded-lg p-1">
+                <button onclick="setReaderTheme('original')" class="p-2 rounded-md hover:bg-white" title="Light"><div class="w-4 h-4 rounded-full bg-white border border-gray-300"></div></button>
+                <button onclick="setReaderTheme('sepia')" class="p-2 rounded-md hover:bg-white" title="Sepia"><div class="w-4 h-4 rounded-full bg-amber-100 border border-gray-300"></div></button>
+                <button onclick="setReaderTheme('night')" class="p-2 rounded-md hover:bg-white" title="Dark"><div class="w-4 h-4 rounded-full bg-gray-900 border border-gray-300"></div></button>
             </div>
-            <div class="bg-gray-100 px-5 py-2 rounded-lg font-mono text-sm">
-                <span id="current-page">1</span> / <span id="total-pages">?</span>
+            <div class="flex bg-gray-100 rounded-lg p-1">
+                <button onclick="zoomOut()" class="p-2 rounded-md hover:bg-white"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                <span id="zoom-level" class="px-3 text-xs font-medium">150%</span>
+                <button onclick="zoomIn()" class="p-2 rounded-md hover:bg-white"><i data-lucide="plus" class="w-4 h-4"></i></button>
             </div>
         </div>
-        
-        <!-- PDF Canvas Container -->
-        <div class="flex-1 overflow-auto flex flex-col items-center py-8 px-4 bg-gray-900" id="reader-scroll-container">
-            <div id="canvas-wrapper" class="flex flex-col items-center">
-                <canvas id="pdf-canvas" class="shadow-2xl rounded-lg"></canvas>
-            </div>
-        </div>
-        
-        <!-- Reader Footer Navigation -->
-        <div class="bg-white border-t border-gray-200 p-3 flex items-center justify-center gap-8">
-            <button onclick="prevPage()" id="prev-btn" class="flex items-center gap-2 px-6 py-2 hover:bg-gray-100 rounded-lg text-gray-700 disabled:opacity-40 transition-all">
-                <i data-lucide="chevron-left" class="w-5 h-5"></i> Previous
-            </button>
-            <button onclick="nextPage()" id="next-btn" class="flex items-center gap-2 px-6 py-2 hover:bg-gray-100 rounded-lg text-gray-700 disabled:opacity-40 transition-all">
-                Next <i data-lucide="chevron-right" class="w-5 h-5"></i>
-            </button>
-        </div>
+        <div class="bg-gray-100 px-5 py-2 rounded-lg font-mono text-sm"><span id="current-page">1</span> / <span id="total-pages">?</span></div>
     </div>
+    <div class="flex-1 overflow-auto flex flex-col items-center py-8 px-4 bg-gray-900" id="reader-scroll-container">
+        <div id="canvas-wrapper" class="flex flex-col items-center"><canvas id="pdf-canvas" class="shadow-2xl rounded-lg"></canvas></div>
+    </div>
+    <div class="bg-white border-t border-gray-200 p-3 flex items-center justify-center gap-8">
+        <button onclick="prevPage()" id="prev-btn" class="flex items-center gap-2 px-6 py-2 hover:bg-gray-100 rounded-lg text-gray-700 disabled:opacity-40"><i data-lucide="chevron-left" class="w-5 h-5"></i> Previous</button>
+        <button onclick="nextPage()" id="next-btn" class="flex items-center gap-2 px-6 py-2 hover:bg-gray-100 rounded-lg text-gray-700 disabled:opacity-40">Next <i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+    </div>
+</div>
 
-    <!-- MODALS -->
-    <!-- Subscription Modal -->
-    <div id="sub-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-4xl w-full flex flex-col md:flex-row overflow-hidden modal-enter">
-            <div class="md:w-1/3 bg-gradient-to-br from-blue-600 to-blue-800 p-8 text-white">
-                <i data-lucide="crown" class="w-12 h-12 mb-4"></i>
-                <h3 class="text-2xl font-bold mb-2">Monthly Pass</h3>
-                <p class="text-blue-100 text-sm mb-6">Unlock unlimited access to our entire library</p>
-                <div class="mt-auto pt-6">
-                    <p class="text-xs opacity-75">Account</p>
-                    <p class="text-sm font-semibold" id="sub-user-email">user@example.com</p>
-                </div>
-            </div>
-            <div class="flex-1 p-8 relative">
-                <button onclick="document.getElementById('sub-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-                <h4 class="text-4xl font-bold text-gray-800 mb-2">₹2,499<span class="text-base font-normal text-gray-500 ml-1">/month</span></h4>
-                <p class="text-gray-500 text-sm mb-6">Cancel anytime • No hidden fees</p>
-                <ul class="space-y-3 mb-8">
-                    <li class="flex items-center gap-3 text-gray-700">
-                        <i data-lucide="check" class="text-emerald-500 w-5 h-5"></i> Access to all premium eBooks
-                    </li>
-                    <li class="flex items-center gap-3 text-gray-700">
-                        <i data-lucide="check" class="text-emerald-500 w-5 h-5"></i> Cross-device sync
-                    </li>
-                    <li class="flex items-center gap-3 text-gray-700">
-                        <i data-lucide="check" class="text-emerald-500 w-5 h-5"></i> Priority support
-                    </li>
-                </ul>
-                <button onclick="window.open('https://wa.me/911234567890?text=Monthly%20Pass%20Activation%20Request%20for%20' + userEmail, '_blank')" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors">
-                    Activate Pass via WhatsApp
-                </button>
-            </div>
-        </div>
+<!-- MODALS -->
+<div id="sub-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full flex flex-col md:flex-row overflow-hidden modal-enter">
+        <div class="md:w-1/3 bg-gradient-to-br from-blue-600 to-blue-800 p-8 text-white"><i data-lucide="crown" class="w-12 h-12 mb-4"></i><h3 class="text-2xl font-bold mb-2">Monthly Pass</h3><p class="text-blue-100 text-sm mb-6">Unlock unlimited access</p><div class="mt-auto pt-6"><p class="text-xs opacity-75">Account</p><p class="text-sm font-semibold" id="sub-user-email">user@example.com</p></div></div>
+        <div class="flex-1 p-8 relative"><button onclick="document.getElementById('sub-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button><h4 class="text-4xl font-bold text-gray-800 mb-2">₹2,499<span class="text-base font-normal text-gray-500 ml-1">/month</span></h4><ul class="space-y-3 mb-8"><li class="flex items-center gap-3 text-gray-700"><i data-lucide="check" class="text-emerald-500 w-5 h-5"></i> All premium eBooks</li><li class="flex items-center gap-3 text-gray-700"><i data-lucide="check" class="text-emerald-500 w-5 h-5"></i> Cross-device sync</li><li class="flex items-center gap-3 text-gray-700"><i data-lucide="check" class="text-emerald-500 w-5 h-5"></i> Priority support</li></ul><button onclick="window.open('https://wa.me/911234567890?text=Monthly%20Pass%20Activation%20Request%20for%20' + userEmail, '_blank')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">Activate via WhatsApp</button></div>
     </div>
-    
-    <!-- Book Detail Modal (Right Drawer) -->
-    <div id="detail-modal" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex justify-end">
-        <div class="w-full max-w-md bg-white h-full shadow-xl flex flex-col overflow-y-auto animate-in slide-in-from-right duration-300">
-            <div class="relative h-64 bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
-                <span id="detail-cover-letter" class="text-8xl font-bold text-white/30">B</span>
-                <button onclick="closeDetail()" class="absolute top-4 right-4 text-white/80 hover:text-white">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            <div class="p-6">
-                <h2 id="detail-title" class="text-2xl font-bold text-gray-800 mb-3">Book Title</h2>
-                <p id="detail-desc" class="text-gray-600 text-sm leading-relaxed mb-6"></p>
-                <div id="detail-actions" class="space-y-3">
-                    <!-- Dynamic buttons will be inserted here -->
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Blog Detail Modal -->
-    <div id="blog-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-end">
-        <div class="w-full max-w-2xl bg-white h-full shadow-xl flex flex-col overflow-y-auto">
-            <div class="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
-                <span id="blog-detail-cat" class="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Article</span>
-                <button onclick="closeBlog()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <div class="p-8">
-                <h2 id="blog-detail-title" class="text-3xl font-bold text-gray-800 mb-6">Title</h2>
-                <div id="blog-detail-content" class="blog-content text-gray-700"></div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Payment Modal -->
-    <div id="payment-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 modal-enter">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">License Verification</h3>
-            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6">
-                <p class="text-sm text-gray-600 mb-1">Amount to transfer: <span id="pay-amt-display" class="font-bold">₹0</span></p>
-                <p class="text-sm text-gray-600">UPI ID: <span class="font-mono font-semibold">rajesh@upi</span></p>
-            </div>
-            <input type="text" id="utr-input" placeholder="Transaction ID / UTR Number" 
-                   class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-6 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-            <button onclick="notifyAdmin()" 
-                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
-                <i data-lucide="send" class="w-5 h-5"></i> Submit Request
-            </button>
-        </div>
-    </div>
+</div>
+<div id="detail-modal" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex justify-end"><div class="w-full max-w-md bg-white h-full shadow-xl flex flex-col overflow-y-auto"><div class="relative h-64 bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center"><span id="detail-cover-letter" class="text-8xl font-bold text-white/30">B</span><button onclick="closeDetail()" class="absolute top-4 right-4 text-white/80 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="p-6"><h2 id="detail-title" class="text-2xl font-bold text-gray-800 mb-3">Book Title</h2><p id="detail-desc" class="text-gray-600 text-sm leading-relaxed mb-6"></p><div id="detail-actions" class="space-y-3"></div></div></div></div>
+<div id="blog-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-end"><div class="w-full max-w-2xl bg-white h-full shadow-xl flex flex-col overflow-y-auto"><div class="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between"><span id="blog-detail-cat" class="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Article</span><button onclick="closeBlog()" class="p-2 hover:bg-gray-100 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="p-8"><h2 id="blog-detail-title" class="text-3xl font-bold text-gray-800 mb-6">Title</h2><div id="blog-detail-content" class="blog-content text-gray-700"></div></div></div></div>
+<div id="payment-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 modal-enter"><h3 class="text-xl font-bold text-gray-800 mb-4">License Verification</h3><div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6"><p class="text-sm text-gray-600 mb-1">Amount: <span id="pay-amt-display" class="font-bold">₹0</span></p><p class="text-sm text-gray-600">UPI: <span class="font-mono font-semibold">rajesh@upi</span></p></div><input type="text" id="utr-input" placeholder="Transaction ID / UTR" class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-6 focus:ring-2 focus:ring-blue-500"><button onclick="notifyAdmin()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2"><i data-lucide="send" class="w-5 h-5"></i> Submit Request</button></div></div>
 
-    <script>
-        // ============================================
-        // CONFIGURATION
-        // ============================================
-        // IMPORTANT: Replace with your actual deployed Apps Script URL
-        const API_URL = "https://script.google.com/macros/s/AKfycbzKR6iJWiXZ1jJAcScaJ5Q6rzZsFwpueBxxvSVeqwdbNzDLzyvDKRGBoH4PXQWvXlYt/exec";
-        
-        // PDF.js Configuration
-        const pdfjsLib = window['pdfjs-dist/build/pdf'];
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        
-        // Global Variables
-        let CATALOG = [];
-        let BLOGS = [];
-        let authBooks = [];
-        let isSubscribed = false;
-        let userEmail = localStorage.getItem('raveone_email') || '';
-        let pdfDoc = null;
-        let pageNum = 1;
-        let pageRendering = false;
-        let activeBookId = "";
-        let activeBookTitle = "";
-        let currentScale = 1.4;
-        let currentTheme = "original";
-        
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            if (userEmail) {
-                init(userEmail);
-            } else {
-                showView('login-view');
-            }
+<script>
+// ========== CONFIGURATION ==========
+// IMPORTANT: No need to hardcode URL – we use the same origin as the page
+const API_URL = 'https://script.google.com/macros/s/AKfycbzKR6iJWiXZ1jJAcScaJ5Q6rzZsFwpueBxxvSVeqwdbNzDLzyvDKRGBoH4PXQWvXlYt/exec';  // empty = use same origin
+
+// PDF.js worker
+const pdfjsLib = window['pdfjs-dist/build/pdf'];
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// Global state
+let CATALOG = [], BLOGS = [], authBooks = [], isSubscribed = false;
+let userEmail = localStorage.getItem('raveone_email') || '';
+let pdfDoc = null, pageNum = 1, pageRendering = false, activeBookId = "", activeBookTitle = "";
+let currentScale = 1.4, currentTheme = "original";
+
+// Helper: fetch with current origin
+async function apiCall(payload) {
+    const response = await fetch(API_URL || window.location.href, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+    return response.json();
+}
+
+// ========== INITIALIZATION ==========
+document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); if(userEmail) init(userEmail); else showView('login-view'); });
+
+async function handleLogin() {
+    const email = document.getElementById('email-input').value.trim().toLowerCase();
+    if(!email) return showError("Enter email");
+    toggleLoading(true);
+    try { await init(email); } catch(e) { showError("Connection failed: " + e.message); } finally { toggleLoading(false); }
+}
+
+async function init(email) {
+    userEmail = email;
+    localStorage.setItem('raveone_email', email);
+    document.getElementById('user-display-short').innerText = email.split('@')[0];
+    document.getElementById('user-initial').innerText = email[0].toUpperCase();
+    document.getElementById('sub-user-email').innerText = email;
+    
+    const data = await apiCall({ action: 'getLibrary', email: email });
+    if(data.error) throw new Error(data.error);
+    
+    CATALOG = data.catalog || [];
+    BLOGS = data.blogs || [];
+    authBooks = data.authorizedTitles || [];
+    isSubscribed = data.isSubscribed || false;
+    
+    const badge = document.getElementById('pass-badge');
+    badge.innerText = isSubscribed ? "✓ Pass: Active" : "Pass: Inactive";
+    badge.className = isSubscribed ? "text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700" : "text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600";
+    
+    renderLibrary();
+    updateContinueSection();
+    showView('dashboard-view');
+}
+
+function renderLibrary(filter = "") {
+    const grid = document.getElementById('book-grid');
+    if(!grid) return;
+    grid.innerHTML = '';
+    const filtered = CATALOG.filter(b => b.Title.toLowerCase().includes(filter.toLowerCase()));
+    if(filtered.length === 0) { grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">No books found</div>'; return; }
+    filtered.forEach(book => {
+        const hasAccess = authBooks.includes(book.Title) || authBooks.includes("ALL") || isSubscribed || book.Type === 'Open';
+        const progress = localStorage.getItem(`prog_${userEmail}_${book.ID}`) || 0;
+        const card = document.createElement('div');
+        card.className = "book-card bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all";
+        card.onclick = () => showDetail(book);
+        card.innerHTML = `
+            <div class="aspect-[3/4] bg-gradient-to-br ${hasAccess ? 'from-blue-500 to-blue-700' : 'from-gray-400 to-gray-600'} relative flex items-center justify-center">
+                <span class="text-6xl font-bold text-white/30">${(book.Title[0] || 'B').toUpperCase()}</span>
+                ${hasAccess ? '<div class="absolute top-3 right-3 bg-emerald-500 rounded-full p-1"><i data-lucide="check" class="w-4 h-4 text-white"></i></div>' : ''}
+                ${progress > 0 && hasAccess ? '<div class="absolute bottom-0 left-0 right-0 h-1 bg-white/30"><div class="progress-bar h-full bg-emerald-400" style="width: ' + progress + '%"></div></div>' : ''}
+            </div>
+            <div class="p-4">
+                <h3 class="font-semibold text-gray-800 truncate">${book.Title}</h3>
+                <div class="mt-3 flex items-center justify-between text-xs">
+                    <span class="${hasAccess ? 'text-emerald-600' : 'text-gray-500'} font-medium">${hasAccess ? (progress>0 ? progress+'% read' : 'Available') : '₹'+book.Price}</span>
+                    <span class="text-blue-600">Details →</span>
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+    document.getElementById('owned-count').innerText = `${authBooks.length} accessible`;
+    lucide.createIcons();
+}
+
+function showDetail(book) {
+    activeBookId = book.ID; activeBookTitle = book.Title;
+    const hasAccess = authBooks.includes(book.Title) || authBooks.includes("ALL") || isSubscribed || book.Type === 'Open';
+    document.getElementById('detail-title').innerText = book.Title;
+    document.getElementById('detail-desc').innerText = book.Description || 'No description';
+    document.getElementById('detail-cover-letter').innerText = book.Title[0].toUpperCase();
+    const container = document.getElementById('detail-actions');
+    if(hasAccess) {
+        container.innerHTML = `<button onclick="openBook('${book.Title.replace(/'/g, "\\'")}', '${book.ID}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">Read Now</button><button onclick="closeDetail()" class="w-full border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-lg">Close</button>`;
+    } else {
+        container.innerHTML = `<button onclick="openPayModal('${book.Title.replace(/'/g, "\\'")}', ${book.Price})" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">Verify License (₹${book.Price})</button><button onclick="openSubHub()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg">Get Subscription</button><button onclick="closeDetail()" class="w-full border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-lg">Cancel</button>`;
+    }
+    document.getElementById('detail-modal').classList.remove('hidden');
+    lucide.createIcons();
+}
+
+// ========== PDF READER ==========
+async function openBook(title, id) {
+    closeDetail();
+    activeBookId = id; activeBookTitle = title;
+    showView('reader-view');
+    const wrapper = document.getElementById('canvas-wrapper');
+    wrapper.innerHTML = '<div class="text-white text-center py-20"><i data-lucide="loader-2" class="spinner w-12 h-12 mx-auto mb-4"></i><p>Loading book...</p></div>';
+    lucide.createIcons();
+    try {
+        const data = await apiCall({ action: 'fetchBook', email: userEmail, bookTitle: title });
+        if(!data.success) throw new Error(data.error || "Failed to load book");
+        const binary = atob(data.base64);
+        const bytes = new Uint8Array(binary.length);
+        for(let i=0; i<binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        loadPDF(bytes.buffer);
+    } catch(err) {
+        alert("Error: " + err.message);
+        closeReader();
+    }
+}
+
+function loadPDF(arrayBuffer) {
+    pdfjsLib.getDocument({ data: arrayBuffer }).promise.then(doc => {
+        pdfDoc = doc;
+        document.getElementById('total-pages').innerText = doc.numPages;
+        const wrapper = document.getElementById('canvas-wrapper');
+        wrapper.innerHTML = '<canvas id="pdf-canvas" class="shadow-2xl rounded-lg"></canvas>';
+        const savedPage = localStorage.getItem(`last_page_${userEmail}_${activeBookId}`);
+        pageNum = savedPage ? parseInt(savedPage) : 1;
+        if(pageNum > doc.numPages) pageNum = 1;
+        setReaderTheme(currentTheme);
+        renderPage(pageNum);
+    }).catch(err => { alert("PDF render error: " + err.message); closeReader(); });
+}
+
+function renderPage(num) {
+    if(!pdfDoc || pageRendering) return;
+    pageRendering = true;
+    pdfDoc.getPage(num).then(page => {
+        const viewport = page.getViewport({ scale: currentScale });
+        const canvas = document.getElementById('pdf-canvas');
+        if(!canvas) return;
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        const ctx = canvas.getContext('2d');
+        page.render({ canvasContext: ctx, viewport: viewport }).promise.then(() => {
+            pageRendering = false;
+            document.getElementById('current-page').innerText = num;
+            document.getElementById('prev-btn').disabled = (num <= 1);
+            document.getElementById('next-btn').disabled = (num >= pdfDoc.numPages);
+            const progress = Math.round((num / pdfDoc.numPages) * 100);
+            localStorage.setItem(`last_page_${userEmail}_${activeBookId}`, num);
+            localStorage.setItem(`prog_${userEmail}_${activeBookId}`, progress);
+            localStorage.setItem(`last_accessed_${userEmail}`, activeBookId);
+            apiCall({ action: 'saveProgress', email: userEmail, bookId: activeBookId, pageNum: num, progress: progress }).catch(e=>console.log);
         });
-        
-        async function handleLogin() {
-            const email = document.getElementById('email-input').value.trim().toLowerCase();
-            if (!email) {
-                showError("Please enter your email address");
-                return;
-            }
-            
-            toggleLoading(true);
-            try {
-                await init(email);
-            } catch (e) {
-                console.error("Login error:", e);
-                showError("Connection failed. Please check your internet connection and try again.");
-            } finally {
-                toggleLoading(false);
-            }
-        }
-        
-        async function init(email) {
-            userEmail = email;
-            localStorage.setItem('raveone_email', email);
-            
-            // Update UI elements
-            document.getElementById('user-display-short').innerText = email.split('@')[0];
-            document.getElementById('user-initial').innerText = email[0].toUpperCase();
-            document.getElementById('sub-user-email').innerText = email;
-            
-            // Fetch library data from backend
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'getLibrary',
-                    email: email
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            
-            CATALOG = data.catalog || [];
-            BLOGS = data.blogs || [];
-            authBooks = data.authorizedTitles || [];
-            isSubscribed = data.isSubscribed || false;
-            
-            // Update subscription badge
-            const badge = document.getElementById('pass-badge');
-            if (badge) {
-                badge.innerText = isSubscribed ? "✓ Pass: Active" : "Pass: Inactive";
-                badge.className = isSubscribed ? "text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700" : "text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600";
-            }
-            
-            // Render UI
-            renderLibrary();
-            updateContinueSection();
-            showView('dashboard-view');
-        }
-        
-        // ============================================
-        // LIBRARY RENDERING
-        // ============================================
-        function renderLibrary(filter = "") {
-            const grid = document.getElementById('book-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            
-            const filtered = CATALOG.filter(book => 
-                book.Title && book.Title.toLowerCase().includes(filter.toLowerCase())
-            );
-            
-            if (filtered.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">No books found</div>';
-                return;
-            }
-            
-            filtered.forEach(book => {
-                const hasAccess = authBooks.includes(book.Title) || authBooks.includes("ALL") || isSubscribed || book.Type === 'Open';
-                const progress = localStorage.getItem(`prog_${userEmail}_${book.ID}`) || 0;
-                
-                const card = document.createElement('div');
-                card.className = "book-card bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all";
-                card.onclick = () => showDetail(book);
-                
-                card.innerHTML = `
-                    <div class="aspect-[3/4] bg-gradient-to-br ${hasAccess ? 'from-blue-500 to-blue-700' : 'from-gray-400 to-gray-600'} relative flex items-center justify-center">
-                        <span class="text-6xl font-bold text-white/30">${(book.Title || 'B')[0].toUpperCase()}</span>
-                        ${hasAccess ? '<div class="absolute top-3 right-3 bg-emerald-500 rounded-full p-1"><i data-lucide="check" class="w-4 h-4 text-white"></i></div>' : ''}
-                        ${progress > 0 && hasAccess ? '<div class="absolute bottom-0 left-0 right-0 h-1 bg-white/30"><div class="progress-bar h-full bg-emerald-400" style="width: ' + progress + '%"></div></div>' : ''}
-                    </div>
-                    <div class="p-4">
-                        <h3 class="font-semibold text-gray-800 truncate">${book.Title || 'Untitled'}</h3>
-                        <div class="mt-3 flex items-center justify-between text-xs">
-                            <span class="${hasAccess ? 'text-emerald-600' : 'text-gray-500'} font-medium">
-                                ${hasAccess ? (progress > 0 ? progress + '% read' : 'Available') : '₹' + (book.Price || 0)}
-                            </span>
-                            <span class="text-blue-600">Details →</span>
-                        </div>
-                    </div>
-                `;
-                
-                grid.appendChild(card);
-            });
-            
-            document.getElementById('owned-count').innerText = `${authBooks.length} accessible`;
+    });
+}
+
+function prevPage() { if(pageNum > 1 && !pageRendering) { pageNum--; renderPage(pageNum); document.getElementById('reader-scroll-container').scrollTop = 0; } }
+function nextPage() { if(pdfDoc && pageNum < pdfDoc.numPages && !pageRendering) { pageNum++; renderPage(pageNum); document.getElementById('reader-scroll-container').scrollTop = 0; } }
+function zoomIn() { currentScale = Math.min(3, currentScale+0.2); updateZoom(); }
+function zoomOut() { currentScale = Math.max(0.6, currentScale-0.2); updateZoom(); }
+function updateZoom() { document.getElementById('zoom-level').innerText = Math.round(currentScale*100)+'%'; if(pdfDoc) renderPage(pageNum); }
+function setReaderTheme(theme) { currentTheme = theme; const canvas = document.getElementById('pdf-canvas'); if(canvas) { canvas.classList.remove('pdf-sepia','pdf-night'); if(theme==='sepia') canvas.classList.add('pdf-sepia'); if(theme==='night') canvas.classList.add('pdf-night'); } }
+
+// ========== BLOG ==========
+function renderBlog() {
+    const grid = document.getElementById('blog-grid');
+    if(!grid) return;
+    grid.innerHTML = '';
+    if(BLOGS.length===0) { grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">No articles</div>'; return; }
+    BLOGS.forEach(post => {
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg transition-all cursor-pointer";
+        card.onclick = () => {
+            document.getElementById('blog-detail-title').innerText = post.Title;
+            document.getElementById('blog-detail-content').innerHTML = post.Content || '<p>No content</p>';
+            document.getElementById('blog-detail-cat').innerText = post.Category || 'Article';
+            document.getElementById('blog-modal').classList.remove('hidden');
             lucide.createIcons();
-        }
-        
-        function showDetail(book) {
-            activeBookId = book.ID;
-            activeBookTitle = book.Title;
-            const hasAccess = authBooks.includes(book.Title) || authBooks.includes("ALL") || isSubscribed || book.Type === 'Open';
-            
-            document.getElementById('detail-title').innerText = book.Title || 'Untitled';
-            document.getElementById('detail-desc').innerText = book.Description || 'No description available';
-            document.getElementById('detail-cover-letter').innerText = (book.Title || 'B')[0].toUpperCase();
-            
-            const actionsContainer = document.getElementById('detail-actions');
-            
-            if (hasAccess) {
-                actionsContainer.innerHTML = `
-                    <button onclick="openBook('${book.Title.replace(/'/g, "\\'")}', '${book.ID}')" 
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors">
-                        Read Now
-                    </button>
-                    <button onclick="closeDetail()" class="w-full border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-lg transition-colors">
-                        Close
-                    </button>
-                `;
-            } else {
-                actionsContainer.innerHTML = `
-                    <button onclick="openPayModal('${book.Title.replace(/'/g, "\\'")}', ${book.Price || 0})" 
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors">
-                        Verify License (₹${book.Price || 0})
-                    </button>
-                    <button onclick="openSubHub()" 
-                            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg transition-colors">
-                        Get Subscription Pass
-                    </button>
-                    <button onclick="closeDetail()" class="w-full border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-lg transition-colors">
-                        Cancel
-                    </button>
-                `;
-            }
-            
-            document.getElementById('detail-modal').classList.remove('hidden');
-            lucide.createIcons();
-        }
-        
-        // ============================================
-        // PDF READING FUNCTIONALITY
-        // ============================================
-        async function openBook(title, id) {
-            closeDetail();
-            activeBookId = id;
-            activeBookTitle = title;
-            showView('reader-view');
-            
-            // Show loading indicator
-            const canvas = document.getElementById('pdf-canvas');
-            const wrapper = document.getElementById('canvas-wrapper');
-            if (canvas) canvas.style.display = 'none';
-            wrapper.innerHTML = '<div class="text-white text-center py-20"><i data-lucide="loader-2" class="spinner w-12 h-12 mx-auto mb-4"></i><p>Loading book...</p></div>';
-            lucide.createIcons();
-            
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'fetchBook',
-                        email: userEmail,
-                        bookTitle: title
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                
-                if (data.success === false) {
-                    throw new Error(data.error || "Failed to load book");
-                }
-                
-                if (data.base64) {
-                    // Decode base64 to binary
-                    const binaryString = atob(data.base64);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    
-                    // Load PDF with PDF.js
-                    loadPDF(bytes.buffer);
-                } else {
-                    throw new Error("Invalid response from server");
-                }
-            } catch (err) {
-                console.error("Error opening book:", err);
-                alert("Failed to load the book: " + err.message);
-                closeReader();
-            }
-        }
-        
-        function loadPDF(arrayBuffer) {
-            pdfjsLib.getDocument({ data: arrayBuffer }).promise.then(doc => {
-                pdfDoc = doc;
-                document.getElementById('total-pages').innerText = doc.numPages;
-                
-                // Reset canvas wrapper
-                const wrapper = document.getElementById('canvas-wrapper');
-                wrapper.innerHTML = '<canvas id="pdf-canvas" class="shadow-2xl rounded-lg"></canvas>';
-                
-                // Restore saved progress
-                const savedPage = localStorage.getItem(`last_page_${userEmail}_${activeBookId}`);
-                pageNum = savedPage ? parseInt(savedPage) : 1;
-                if (pageNum > doc.numPages) pageNum = 1;
-                
-                // Restore theme
-                setReaderTheme(currentTheme);
-                
-                renderPage(pageNum);
-            }).catch(err => {
-                console.error("PDF.js error:", err);
-                alert("Failed to render PDF. The file might be corrupted or in an unsupported format.");
-                closeReader();
-            });
-        }
-        
-        function renderPage(num) {
-            if (!pdfDoc) return;
-            pageRendering = true;
-            
-            pdfDoc.getPage(num).then(page => {
-                const viewport = page.getViewport({ scale: currentScale });
-                const canvas = document.getElementById('pdf-canvas');
-                if (!canvas) return;
-                
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                canvas.style.display = 'block';
-                
-                const ctx = canvas.getContext('2d');
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport
-                };
-                
-                page.render(renderContext).promise.then(() => {
-                    pageRendering = false;
-                    document.getElementById('current-page').innerText = num;
-                    document.getElementById('prev-btn').disabled = (num <= 1);
-                    document.getElementById('next-btn').disabled = (num >= pdfDoc.numPages);
-                    
-                    // Save progress
-                    const progress = Math.round((num / pdfDoc.numPages) * 100);
-                    localStorage.setItem(`last_page_${userEmail}_${activeBookId}`, num);
-                    localStorage.setItem(`prog_${userEmail}_${activeBookId}`, progress);
-                    localStorage.setItem(`last_accessed_${userEmail}`, activeBookId);
-                    
-                    // Also save to backend if possible
-                    saveProgressToBackend(activeBookId, num, progress);
-                }).catch(err => {
-                    console.error("Render error:", err);
-                    pageRendering = false;
-                });
-            });
-        }
-        
-        async function saveProgressToBackend(bookId, pageNum, progress) {
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'saveProgress',
-                        email: userEmail,
-                        bookId: bookId,
-                        pageNum: pageNum,
-                        progress: progress
-                    })
-                });
-            } catch (err) {
-                console.error("Failed to save progress to backend:", err);
-            }
-        }
-        
-        function prevPage() {
-            if (pageNum > 1 && !pageRendering) {
-                pageNum--;
-                renderPage(pageNum);
-                document.getElementById('reader-scroll-container').scrollTop = 0;
-            }
-        }
-        
-        function nextPage() {
-            if (pdfDoc && pageNum < pdfDoc.numPages && !pageRendering) {
-                pageNum++;
-                renderPage(pageNum);
-                document.getElementById('reader-scroll-container').scrollTop = 0;
-            }
-        }
-        
-        function zoomIn() {
-            currentScale += 0.2;
-            if (currentScale > 3) currentScale = 3;
-            document.getElementById('zoom-level').innerText = Math.round(currentScale * 100) + '%';
-            if (pdfDoc) renderPage(pageNum);
-        }
-        
-        function zoomOut() {
-            currentScale -= 0.2;
-            if (currentScale < 0.6) currentScale = 0.6;
-            document.getElementById('zoom-level').innerText = Math.round(currentScale * 100) + '%';
-            if (pdfDoc) renderPage(pageNum);
-        }
-        
-        function setReaderTheme(theme) {
-            currentTheme = theme;
-            const canvas = document.getElementById('pdf-canvas');
-            if (!canvas) return;
-            
-            canvas.classList.remove('pdf-sepia', 'pdf-night');
-            if (theme === 'sepia') {
-                canvas.classList.add('pdf-sepia');
-            } else if (theme === 'night') {
-                canvas.classList.add('pdf-night');
-            }
-        }
-        
-        // ============================================
-        // BLOG FUNCTIONALITY
-        // ============================================
-        function renderBlog() {
-            const grid = document.getElementById('blog-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            
-            if (BLOGS.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">No articles available</div>';
-                return;
-            }
-            
-            BLOGS.forEach(post => {
-                const card = document.createElement('div');
-                card.className = "bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg transition-all cursor-pointer";
-                card.onclick = () => {
-                    document.getElementById('blog-detail-title').innerText = post.Title || 'Untitled';
-                    document.getElementById('blog-detail-content').innerHTML = post.Content || '<p>No content available</p>';
-                    document.getElementById('blog-detail-cat').innerText = post.Category || 'Article';
-                    document.getElementById('blog-modal').classList.remove('hidden');
-                    lucide.createIcons();
-                };
-                
-                card.innerHTML = `
-                    <div class="flex items-center gap-2 mb-3">
-                        <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">${post.Category || 'Article'}</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-2 hover:text-blue-600 transition-colors">${post.Title || 'Untitled'}</h3>
-                    <p class="text-gray-600 text-sm line-clamp-3">${post.Description || ''}</p>
-                    <div class="mt-4 text-blue-600 text-sm font-medium">Read more →</div>
-                `;
-                
-                grid.appendChild(card);
-            });
-        }
-        
-        // ============================================
-        // UI HELPER FUNCTIONS
-        // ============================================
-        function showView(viewId) {
-            document.getElementById('login-view').classList.add('hidden');
-            document.getElementById('dashboard-view').classList.add('hidden');
-            document.getElementById('reader-view').classList.add('hidden');
-            document.getElementById(viewId).classList.remove('hidden');
-            
-            if (viewId === 'dashboard-view') {
-                renderLibrary();
-                renderBlog();
-                updateContinueSection();
-            }
-        }
-        
-        function updateContinueSection() {
-            const lastBookId = localStorage.getItem(`last_accessed_${userEmail}`);
-            const section = document.getElementById('continue-section');
-            
-            if (!lastBookId) {
-                section.classList.add('hidden');
-                return;
-            }
-            
-            const book = CATALOG.find(b => b.ID === lastBookId);
-            if (book && (authBooks.includes(book.Title) || isSubscribed)) {
-                const progress = localStorage.getItem(`prog_${userEmail}_${book.ID}`) || 0;
-                section.classList.remove('hidden');
-                document.getElementById('continue-title').innerText = book.Title;
-                document.getElementById('continue-progress-text').innerHTML = `${progress}% complete • Resume where you left off`;
-                document.getElementById('continue-card').onclick = () => openBook(book.Title, book.ID);
-            } else {
-                section.classList.add('hidden');
-            }
-        }
-        
-        function switchContext(context, element) {
-            // Update active state
-            document.querySelectorAll('.sidebar-item').forEach(item => {
-                item.classList.remove('active', 'bg-gray-100', 'text-blue-600');
-            });
-            if (element) {
-                element.classList.add('active', 'bg-gray-100', 'text-blue-600');
-            }
-            
-            // Show/hide contexts
-            const libraryContext = document.getElementById('library-context');
-            const blogContext = document.getElementById('blog-context');
-            
-            if (context === 'library') {
-                libraryContext.classList.remove('hidden');
-                blogContext.classList.add('hidden');
-                renderLibrary();
-            } else {
-                libraryContext.classList.add('hidden');
-                blogContext.classList.remove('hidden');
-                renderBlog();
-            }
-        }
-        
-        function handleSearch() {
-            const searchTerm = document.getElementById('search-input').value;
-            renderLibrary(searchTerm);
-        }
-        
-        function filterCategory(category) {
-            // Switch to library view first
-            const homeButton = document.getElementById('nav-home');
-            if (homeButton) {
-                switchContext('library', homeButton);
-            }
-            // Filter by category
-            const filtered = CATALOG.filter(book => book.Category === category);
-            const grid = document.getElementById('book-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            
-            if (filtered.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">No books in this category</div>';
-                return;
-            }
-            
-            filtered.forEach(book => {
-                const hasAccess = authBooks.includes(book.Title) || authBooks.includes("ALL") || isSubscribed || book.Type === 'Open';
-                const progress = localStorage.getItem(`prog_${userEmail}_${book.ID}`) || 0;
-                
-                const card = document.createElement('div');
-                card.className = "book-card bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all cursor-pointer";
-                card.onclick = () => showDetail(book);
-                
-                card.innerHTML = `
-                    <div class="aspect-[3/4] bg-gradient-to-br ${hasAccess ? 'from-blue-500 to-blue-700' : 'from-gray-400 to-gray-600'} relative flex items-center justify-center">
-                        <span class="text-6xl font-bold text-white/30">${(book.Title || 'B')[0].toUpperCase()}</span>
-                        ${hasAccess ? '<div class="absolute top-3 right-3 bg-emerald-500 rounded-full p-1"><i data-lucide="check" class="w-4 h-4 text-white"></i></div>' : ''}
-                    </div>
-                    <div class="p-4">
-                        <h3 class="font-semibold text-gray-800 truncate">${book.Title || 'Untitled'}</h3>
-                        <div class="mt-3 flex items-center justify-between text-xs">
-                            <span class="${hasAccess ? 'text-emerald-600' : 'text-gray-500'} font-medium">
-                                ${hasAccess ? (progress > 0 ? progress + '% read' : 'Available') : '₹' + (book.Price || 0)}
-                            </span>
-                            <span class="text-blue-600">Details →</span>
-                        </div>
-                    </div>
-                `;
-                
-                grid.appendChild(card);
-            });
-            
-            lucide.createIcons();
-        }
-        
-        function openSubHub() {
-            document.getElementById('sub-modal').classList.remove('hidden');
-            lucide.createIcons();
-        }
-        
-        function openPayModal(title, price) {
-            document.getElementById('pay-amt-display').innerText = '₹' + price;
-            document.getElementById('payment-modal').classList.remove('hidden');
-            lucide.createIcons();
-        }
-        
-        function notifyAdmin() {
-            const utr = document.getElementById('utr-input').value;
-            if (!utr) {
-                alert("Please enter the Transaction ID / UTR number");
-                return;
-            }
-            window.open(`https://wa.me/911234567890?text=License%20Verification%20Request%0AUTR:%20${utr}%0AUser:%20${userEmail}%0ABook:%20${activeBookTitle}`, '_blank');
-            document.getElementById('payment-modal').classList.add('hidden');
-        }
-        
-        function closeReader() {
-            pdfDoc = null;
-            showView('dashboard-view');
-        }
-        
-        function closeDetail() {
-            document.getElementById('detail-modal').classList.add('hidden');
-        }
-        
-        function closeBlog() {
-            document.getElementById('blog-modal').classList.add('hidden');
-        }
-        
-        function handleLogout() {
-            localStorage.clear();
-            location.reload();
-        }
-        
-        function toggleLoading(isLoading) {
-            const spinner = document.getElementById('btn-spinner');
-            const btnText = document.getElementById('btn-text');
-            if (isLoading) {
-                spinner.classList.remove('hidden');
-                btnText.innerText = 'Signing in...';
-            } else {
-                spinner.classList.add('hidden');
-                btnText.innerText = 'Sign In';
-            }
-        }
-        
-        function showError(message) {
-            const errorDiv = document.getElementById('login-error');
-            const errorMsg = document.getElementById('error-message');
-            errorMsg.innerText = message;
-            errorDiv.classList.remove('hidden');
-            setTimeout(() => {
-                errorDiv.classList.add('hidden');
-            }, 5000);
-        }
-    </script>
+        };
+        card.innerHTML = `<div class="flex items-center gap-2 mb-3"><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">${post.Category}</span></div><h3 class="text-xl font-bold text-gray-800 mb-2">${post.Title}</h3><p class="text-gray-600 text-sm">${post.Description || ''}</p><div class="mt-4 text-blue-600 text-sm font-medium">Read more →</div>`;
+        grid.appendChild(card);
+    });
+}
+
+// ========== UI HELPERS ==========
+function showView(viewId) { ['login-view','dashboard-view','reader-view'].forEach(id => document.getElementById(id)?.classList.add('hidden')); document.getElementById(viewId)?.classList.remove('hidden'); if(viewId==='dashboard-view') { renderLibrary(); renderBlog(); updateContinueSection(); } }
+function updateContinueSection() {
+    const lastId = localStorage.getItem(`last_accessed_${userEmail}`);
+    const section = document.getElementById('continue-section');
+    if(!lastId) { section.classList.add('hidden'); return; }
+    const book = CATALOG.find(b => b.ID === lastId);
+    if(book && (authBooks.includes(book.Title) || isSubscribed)) {
+        section.classList.remove('hidden');
+        document.getElementById('continue-title').innerText = book.Title;
+        const prog = localStorage.getItem(`prog_${userEmail}_${book.ID}`) || 0;
+        document.getElementById('continue-progress-text').innerHTML = `${prog}% complete • Resume`;
+        document.getElementById('continue-card').onclick = () => openBook(book.Title, book.ID);
+    } else section.classList.add('hidden');
+}
+function switchContext(ctx, el) { document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active','bg-gray-100','text-blue-600')); if(el) el.classList.add('active','bg-gray-100','text-blue-600'); document.getElementById('library-context').classList.toggle('hidden', ctx!=='library'); document.getElementById('blog-context').classList.toggle('hidden', ctx!=='blog'); if(ctx==='blog') renderBlog(); }
+function handleSearch() { renderLibrary(document.getElementById('search-input').value); }
+function filterCategory(cat) { switchContext('library', document.getElementById('nav-home')); const filtered = CATALOG.filter(b=>b.Category===cat); const grid = document.getElementById('book-grid'); grid.innerHTML=''; if(!filtered.length) { grid.innerHTML='<div class="col-span-full text-center py-12 text-gray-500">No books</div>'; return; } filtered.forEach(book=>{ const hasAccess = authBooks.includes(book.Title)||authBooks.includes("ALL")||isSubscribed; const card = document.createElement('div'); card.className="book-card bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg cursor-pointer"; card.onclick=()=>showDetail(book); card.innerHTML=`<div class="aspect-[3/4] bg-gradient-to-br ${hasAccess?'from-blue-500 to-blue-700':'from-gray-400 to-gray-600'} flex items-center justify-center"><span class="text-6xl font-bold text-white/30">${book.Title[0]}</span></div><div class="p-4"><h3 class="font-semibold">${book.Title}</h3><div class="mt-2 text-xs"><span class="${hasAccess?'text-emerald-600':'text-gray-500'}">${hasAccess?'Available':'₹'+book.Price}</span></div></div>`; grid.appendChild(card); }); lucide.createIcons(); }
+function openSubHub() { document.getElementById('sub-modal').classList.remove('hidden'); lucide.createIcons(); }
+function openPayModal(title,price) { document.getElementById('pay-amt-display').innerText = '₹'+price; document.getElementById('payment-modal').classList.remove('hidden'); lucide.createIcons(); }
+function notifyAdmin() { const utr = document.getElementById('utr-input').value; if(!utr) { alert("Enter transaction ID"); return; } window.open(`https://wa.me/911234567890?text=License%20Request%0AUTR:${utr}%0AUser:${userEmail}%0ABook:${activeBookTitle}`,'_blank'); document.getElementById('payment-modal').classList.add('hidden'); }
+function closeReader() { pdfDoc = null; showView('dashboard-view'); }
+function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
+function closeBlog() { document.getElementById('blog-modal').classList.add('hidden'); }
+function handleLogout() { localStorage.clear(); location.reload(); }
+function toggleLoading(l) { document.getElementById('btn-spinner').classList.toggle('hidden', !l); document.getElementById('btn-text').innerText = l ? 'Signing in...' : 'Sign In'; }
+function showError(m) { const e = document.getElementById('login-error'); document.getElementById('error-message').innerText = m; e.classList.remove('hidden'); setTimeout(()=>e.classList.add('hidden'),5000); }
+</script>
 </body>
 </html>
