@@ -10,7 +10,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&display=swap');
         :root { --ms-blue: #0078d4; --ms-border: #edebe9; --ms-bg: #faf9f8; --ms-text: #323130; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--ms-bg); color: var(--ms-text); -webkit-user-select: none; user-select: none; transition: background-color 0.3s; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--ms-bg); color: var(--ms-text); -webkit-user-select: none; user-select: none; transition: background-color 0.3s; overflow-x: hidden; }
         .ms-card { background: white; border: 1px solid var(--ms-border); border-radius: 4px; transition: all 0.2s; cursor: pointer; }
         .ms-card:hover { box-shadow: 0 8px 16px rgba(0,0,0,0.1); border-color: #d2d0ce; }
         .ms-btn-primary { background-color: var(--ms-blue); color: white; border-radius: 2px; font-weight: 600; }
@@ -24,6 +24,7 @@
         .hidden { display: none !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #c8c6c4; }
+        .blog-content p { margin-bottom: 1.25rem; line-height: 1.6; }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -33,13 +34,15 @@
         <div class="max-w-md w-full bg-white shadow-2xl p-10 border border-[#e1dfdd]">
             <div class="flex items-center gap-3 mb-10">
                 <div class="bg-[#0078d4] p-2 rounded shadow-sm"><i data-lucide="book-open" class="text-white w-6 h-6"></i></div>
-                <h1 class="text-xl font-semibold tracking-tight">Sign in to Raveone Library</h1>
+                <h1 class="text-xl font-semibold tracking-tight text-[#323130]">Sign in to Raveone Library</h1>
             </div>
             <div class="space-y-6">
                 <input type="email" id="email-input" placeholder="Email address" class="w-full px-3 py-2 border-b-2 border-[#8a8886] focus:border-[#0078d4] outline-none transition-all text-sm bg-white">
-                <div id="login-error" class="hidden text-xs text-[#a4262c] bg-[#fed9cc] p-3 border border-[#fed9cc]"><span id="error-message"></span></div>
+                <div id="login-error" class="hidden text-xs text-[#a4262c] bg-[#fed9cc] p-3 border border-[#fed9cc] animate-in fade-in slide-in-from-top-1">
+                    <span id="error-message"></span>
+                </div>
                 <div class="flex items-center justify-between">
-                    <p class="text-[10px] text-[#605e5c] font-bold uppercase tracking-wider">Enterprise Security</p>
+                    <p class="text-[10px] text-[#605e5c] font-bold uppercase tracking-wider italic">Secure Auth V2.1</p>
                     <button onclick="handleLogin()" id="login-btn" class="ms-btn-primary px-10 py-2 flex items-center gap-2 text-sm shadow-sm transition-all active:scale-95">
                         <span id="btn-text">Next</span>
                         <i id="btn-spinner" data-lucide="loader-2" class="hidden spinner w-4 h-4 text-white"></i>
@@ -49,11 +52,10 @@
         </div>
     </div>
 
-    <!-- 2. MAIN APP LAYOUT -->
+    <!-- 2. MAIN APP -->
     <div id="dashboard-view" class="hidden min-h-screen flex flex-col md:flex-row">
-        <!-- Sidebar Navigation -->
         <nav class="w-full md:w-64 bg-white border-r border-[#edebe9] flex flex-col z-40">
-            <div class="p-6 flex items-center gap-3 border-b border-[#f3f2f1]">
+            <div class="p-6 border-b border-[#f3f2f1] flex items-center gap-3">
                 <div class="bg-[#0078d4] p-1.5 rounded-sm shadow-sm"><i data-lucide="grid" class="text-white w-4 h-4"></i></div>
                 <span class="font-bold text-[10px] uppercase tracking-[0.2em] text-[#323130]">Library Admin</span>
             </div>
@@ -68,52 +70,46 @@
                 <button onclick="openSubModal()" class="w-full flex items-center gap-3 px-6 py-2.5 text-xs text-emerald-600 font-bold hover:bg-emerald-50 transition-all">
                     <i data-lucide="award" class="w-4 h-4"></i> Subscription Pass
                 </button>
-                
-                <div class="px-6 mt-8 mb-2 text-[10px] font-bold text-[#a19f9d] uppercase tracking-widest">Collections</div>
+                <div class="px-6 mt-8 mb-2 text-[10px] font-bold text-[#a19f9d] uppercase tracking-widest">Filters</div>
                 <button onclick="filterCategory('Wisdom')" class="w-full flex items-center gap-3 px-6 py-2.5 text-xs hover:text-[#0078d4] text-left text-[#605e5c]"><i data-lucide="heart" class="w-3.5 h-3.5"></i> Wisdom</button>
                 <button onclick="filterCategory('Business')" class="w-full flex items-center gap-3 px-6 py-2.5 text-xs hover:text-[#0078d4] text-left text-[#605e5c]"><i data-lucide="briefcase" class="w-3.5 h-3.5"></i> Business</button>
-                <button onclick="filterCategory('Open')" class="w-full flex items-center gap-3 px-6 py-2.5 text-xs hover:text-[#0078d4] text-left text-[#605e5c]"><i data-lucide="unlock" class="w-3.5 h-3.5"></i> Open Access</button>
             </div>
             <div class="p-4 border-t border-[#f3f2f1]">
                 <div class="flex items-center gap-3 px-2 py-2">
                     <div class="w-8 h-8 bg-[#0078d4] text-white rounded-full flex items-center justify-center text-xs font-bold" id="user-initial">R</div>
                     <div class="flex-1 overflow-hidden">
-                        <p id="user-display-short" class="text-xs font-bold truncate text-[#323130]">User</p>
-                        <p id="sub-status-text" class="text-[9px] text-slate-400 font-bold uppercase">Basic Reader</p>
+                        <p id="user-display-short" class="text-xs font-bold truncate">User</p>
+                        <p id="sub-status-text" class="text-[9px] text-[#605e5c] font-bold uppercase tracking-tighter">Reader</p>
                     </div>
                     <button onclick="handleLogout()" class="text-[#a19f9d] hover:text-[#a4262c] p-1"><i data-lucide="log-out" class="w-4 h-4"></i></button>
                 </div>
             </div>
         </nav>
 
-        <!-- Main Content Workspace -->
         <main class="flex-1 overflow-y-auto bg-white flex flex-col">
             <header class="h-16 border-b border-[#edebe9] flex items-center justify-between px-8 sticky top-0 bg-white/95 backdrop-blur-md z-30">
                 <div class="flex items-center gap-4 w-full max-w-xl">
                     <i data-lucide="search" class="text-[#605e5c] w-4 h-4"></i>
-                    <input type="text" id="search-input" oninput="handleSearch()" placeholder="Search library and insights..." class="flex-1 bg-transparent outline-none text-sm border-none font-medium">
+                    <input type="text" id="search-input" oninput="handleSearch()" placeholder="Search library and articles..." class="flex-1 bg-transparent outline-none text-sm border-none font-medium">
                 </div>
-                <div class="flex items-center gap-6">
-                    <div class="flex flex-col items-end">
-                        <span class="text-[9px] font-bold text-[#605e5c] uppercase tracking-widest">Authentication</span>
-                        <span class="text-[9px] text-[#107c10] font-bold uppercase">● Live & Protected</span>
-                    </div>
+                <div class="flex flex-col items-end">
+                    <span class="text-[9px] font-bold text-[#605e5c] uppercase">Online Session</span>
+                    <span class="text-[9px] text-[#107c10] font-bold uppercase">● Live & Protected</span>
                 </div>
             </header>
 
-            <!-- Contexts Container -->
-            <div class="flex-1 overflow-y-auto">
+            <div class="flex-1">
+                <!-- Library -->
                 <div id="library-context" class="p-8 max-w-6xl mx-auto w-full">
-                    <!-- Continue Reading Banner -->
-                    <div id="continue-section" class="hidden mb-12 animate-in fade-in slide-in-from-top-1 duration-500">
-                        <h2 class="text-[9px] font-bold text-[#605e5c] uppercase tracking-[0.2em] mb-4">Pick up where you left off</h2>
-                        <div id="continue-card" class="group flex items-center gap-8 p-8 bg-[#f3f2f1] hover:bg-[#edebe9] border border-transparent hover:border-[#0078d4] transition-all cursor-pointer rounded-sm shadow-sm">
-                            <div class="bg-[#0078d4] p-6 text-white rounded shadow-lg group-hover:scale-105 transition-transform duration-500"><i data-lucide="play" class="w-8 h-8 fill-white"></i></div>
+                    <div id="continue-section" class="hidden mb-12">
+                        <h2 class="text-[9px] font-bold text-[#605e5c] uppercase tracking-[0.2em] mb-4">Resume recent reading</h2>
+                        <div id="continue-card" class="group flex items-center gap-8 p-8 bg-[#f3f2f1] border border-transparent hover:border-[#0078d4] transition-all cursor-pointer rounded-sm shadow-sm">
+                            <div class="bg-[#0078d4] p-6 text-white rounded shadow-lg"><i data-lucide="play" class="w-8 h-8 fill-white"></i></div>
                             <div class="flex-1">
                                 <h3 id="continue-title" class="text-xl font-bold text-[#323130] leading-none mb-2">Book Title</h3>
-                                <p id="continue-progress-text" class="text-xs text-[#605e5c] italic">Auto-saved at page 1</p>
+                                <p id="continue-progress-text" class="text-xs text-[#605e5c] italic">Auto-saved progress</p>
                             </div>
-                            <button class="ms-btn-primary px-8 py-3 text-xs uppercase tracking-widest shadow-md">Open Document</button>
+                            <button class="ms-btn-primary px-8 py-3 text-xs uppercase tracking-widest">Open File</button>
                         </div>
                     </div>
                     <div class="flex items-center justify-between mb-8">
@@ -123,14 +119,14 @@
                     <div id="book-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
                     <div id="empty-library" class="hidden text-center py-32 bg-[#faf9f8] border border-dashed border-[#d2d0ce] rounded">
                         <i data-lucide="package" class="w-12 h-12 text-[#c8c6c4] mx-auto mb-4"></i>
-                        <p class="text-sm font-semibold text-[#605e5c]">No collections found in this view.</p>
+                        <p class="text-sm font-semibold text-[#605e5c]">No collections found.</p>
                     </div>
                 </div>
-
+                <!-- Blog -->
                 <div id="blog-context" class="hidden p-8 max-w-6xl mx-auto w-full">
                     <div class="mb-12">
                         <h2 class="text-3xl font-bold text-[#323130] tracking-tight">Insights Blog</h2>
-                        <p class="text-sm text-[#605e5c] mt-2">Articles and thoughts on workplace character and MSME quality.</p>
+                        <p class="text-sm text-[#605e5c] mt-2">Latest articles and thoughts on business excellence.</p>
                     </div>
                     <div id="blog-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8"></div>
                 </div>
@@ -138,81 +134,34 @@
         </main>
     </div>
 
-    <!-- OVERLAYS: MODALS & FLYOUTS -->
+    <!-- FLYOUTS & MODALS -->
     <div id="detail-modal" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-[100] flex justify-end">
-        <div onclick="event.stopPropagation()" class="w-full max-w-md bg-white h-full shadow-2xl border-l border-[#edebe9] animate-in slide-in-from-right duration-300 flex flex-col p-10 overflow-y-auto custom-scrollbar">
-            <div id="detail-cover" class="w-full aspect-[3/4] bg-[#0078d4] rounded mb-10 flex items-center justify-center text-white text-6xl font-black shadow-xl border-8 border-white">R</div>
-            <span id="detail-cat" class="text-[9px] font-bold text-[#0078d4] uppercase tracking-[0.2em] bg-[#f3f2f1] px-2 py-0.5 rounded-sm inline-block w-fit">Category</span>
-            <h2 id="detail-title" class="text-3xl font-bold text-[#323130] mt-4 mb-6 leading-tight">Book Title</h2>
+        <div onclick="event.stopPropagation()" class="w-full max-w-md bg-white h-full shadow-2xl border-l border-[#edebe9] flex flex-col p-10 overflow-y-auto">
+            <div id="detail-cover" class="w-full aspect-[3/4] bg-[#0078d4] rounded mb-10 flex items-center justify-center text-white text-6xl font-black border-8 border-white shadow-xl">R</div>
+            <span id="detail-cat" class="text-[9px] font-bold text-[#0078d4] uppercase tracking-[0.2em] bg-[#f3f2f1] px-2 py-0.5 rounded-sm w-fit">Category</span>
+            <h2 id="detail-title" class="text-3xl font-bold text-[#323130] mt-4 mb-6 leading-tight text-balance">Book Title</h2>
             <p id="detail-desc" class="text-sm text-[#605e5c] leading-relaxed mb-10 pb-10 border-b">Premium workplace wisdom collection.</p>
-            <div class="grid grid-cols-2 gap-6 mb-10">
-                <div><p class="text-[9px] font-bold text-[#a19f9d] uppercase">Duration</p><p id="detail-time" class="font-bold text-sm">2h</p></div>
-                <div><p class="text-[9px] font-bold text-[#a19f9d] uppercase">License</p><p id="detail-price" class="font-bold text-sm">₹499</p></div>
-            </div>
-            <div id="detail-actions" class="space-y-4"></div>
-            <button onclick="closeDetail()" class="mt-8 text-xs text-slate-400 font-bold uppercase hover:underline">Close Properties</button>
+            <div id="detail-actions"></div>
+            <button onclick="closeDetail()" class="mt-8 text-[10px] text-slate-400 font-bold uppercase hover:underline">Close Properties</button>
         </div>
     </div>
 
-    <!-- PAYMENT MODAL -->
-    <div id="payment-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-md z-[110] flex items-center justify-center p-4">
-        <div class="bg-white rounded-sm w-full max-w-lg shadow-2xl border border-[#edebe9] overflow-hidden">
-            <div class="bg-[#0078d4] p-6 text-white flex items-center justify-between">
-                <h3 class="font-semibold text-sm">Verification Hub</h3>
-                <button onclick="closePayment()" class="hover:bg-white/20 rounded p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <div id="payment-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+        <div class="bg-white rounded-sm w-full max-w-lg shadow-2xl border p-10">
+            <h3 class="font-bold text-lg mb-8">Verification Required</h3>
+            <div class="bg-[#f3f2f1] p-6 border-l-4 border-[#0078d4] mb-8">
+                <p class="text-[10px] font-bold text-[#605e5c] uppercase mb-2">1. Transfer Target</p>
+                <p class="text-lg font-bold font-mono">rajesh@upi</p>
+                <p class="text-[10px] text-[#605e5c] mt-4 uppercase">Payable: <span id="payment-amt" class="font-black">₹499</span></p>
             </div>
-            <div class="p-10">
-                <div class="text-center mb-8">
-                    <p id="payment-book-title" class="text-[10px] font-bold text-[#605e5c] uppercase tracking-widest mb-2">Request Access For</p>
-                    <div id="payment-book-price" class="text-6xl font-light text-[#323130] tracking-tighter leading-none">₹499</div>
-                </div>
-                <div class="space-y-6">
-                    <div class="p-6 bg-[#f3f2f1] border-l-4 border-[#0078d4] rounded-sm">
-                        <p class="text-[10px] font-bold text-[#605e5c] uppercase mb-4 tracking-widest">1. Transaction Target</p>
-                        <div class="flex justify-between items-center mb-6 bg-white p-3 border border-[#d2d0ce]">
-                            <span class="text-sm font-bold font-mono">rajesh@upi</span>
-                            <button onclick="copyUPI()" class="text-[#0078d4] text-[10px] font-bold uppercase hover:underline">Copy ID</button>
-                        </div>
-                        <a id="upi-deep-link" href="upi://pay?pa=rajesh@upi&pn=Rajesh%20Rao&cu=INR" class="block w-full text-center bg-white border border-[#d2d0ce] py-3 rounded-sm text-xs font-bold hover:bg-slate-50">Open UPI App</a>
-                    </div>
-                    <div class="p-6 bg-white border border-[#edebe9] rounded-sm">
-                        <p class="text-[10px] font-bold text-[#605e5c] uppercase mb-4 tracking-widest">2. Submit Verification</p>
-                        <input type="text" id="utr-input" placeholder="Transaction Reference / UTR" class="w-full px-4 py-3 border border-[#d2d0ce] outline-none text-xs mb-4 focus:border-[#0078d4] bg-[#faf9f8]">
-                        <button onclick="notifyAdmin()" class="w-full bg-[#107c10] hover:bg-[#0b5a0b] text-white font-bold py-4 rounded-sm text-xs uppercase tracking-widest flex items-center justify-center gap-3 shadow-lg">
-                            <i data-lucide="send" class="w-4 h-4"></i> Submit Claim
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <input type="text" id="utr-input" placeholder="Transaction Reference / UTR" class="w-full px-4 py-3 border border-[#d2d0ce] outline-none text-sm mb-6 focus:border-[#0078d4] bg-[#faf9f8]">
+            <button onclick="notifyAdmin()" class="w-full bg-[#107c10] hover:bg-[#0b5a0b] text-white font-bold py-4 rounded-sm text-xs uppercase tracking-widest shadow-lg flex items-center justify-center gap-3">
+                <i data-lucide="send" class="w-4 h-4"></i> Submit Claim
+            </button>
+            <button onclick="closePayment()" class="w-full mt-4 text-[10px] text-slate-400 font-bold uppercase">Cancel</button>
         </div>
     </div>
 
-    <!-- SUBSCRIPTION PASS MODAL -->
-    <div id="sub-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-md z-[120] flex items-center justify-center p-4">
-        <div class="bg-white rounded-sm w-full max-w-4xl shadow-2xl border border-[#edebe9] overflow-hidden flex flex-col md:flex-row">
-            <div class="w-full md:w-1/3 bg-[#0078d4] p-10 text-white flex flex-col">
-                <div class="mb-auto">
-                    <div class="bg-white/20 p-2 rounded w-fit mb-6"><i data-lucide="award" class="w-6 h-6"></i></div>
-                    <h3 class="text-2xl font-bold leading-tight">Monthly Library Pass</h3>
-                    <p class="text-xs text-blue-100 mt-4 leading-relaxed">Unlimited access to all collections for 30 days.</p>
-                </div>
-                <div class="mt-10"><p class="text-[9px] font-bold uppercase tracking-widest opacity-60">Admin Support</p><p class="text-xs font-semibold">rajesh@raveone.in</p></div>
-            </div>
-            <div class="flex-1 p-12 bg-white relative">
-                <button onclick="document.getElementById('sub-modal').classList.add('hidden')" class="absolute top-8 right-8 text-[#a19f9d] hover:text-[#323130]"><i data-lucide="x" class="w-6 h-6"></i></button>
-                <span class="text-[10px] font-bold text-[#0078d4] uppercase tracking-widest">Pricing Model</span>
-                <h4 class="text-5xl font-light text-[#323130] mt-2 mb-6 tracking-tighter">₹2,499<span class="text-sm font-bold text-[#a19f9d]"> / month</span></h4>
-                <ul class="space-y-4 mb-10 text-sm text-[#605e5c]">
-                    <li class="flex items-center gap-3"><i data-lucide="check" class="text-emerald-600 w-4 h-4"></i> Full access to all 3 Premium eBooks</li>
-                    <li class="flex items-center gap-3"><i data-lucide="check" class="text-emerald-600 w-4 h-4"></i> Unlock all Open Access curators</li>
-                    <li class="flex items-center gap-3"><i data-lucide="check" class="text-emerald-600 w-4 h-4"></i> Priority Reading Mode</li>
-                </ul>
-                <button onclick="window.open('https://wa.me/911234567890?text=SubRequest: '+userEmail, '_blank')" class="ms-btn-primary w-full py-4 uppercase text-xs tracking-[0.2em] shadow-lg">Request Pass Activation</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- BLOG POST VIEW -->
     <div id="blog-modal" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-[100] flex justify-end">
         <div onclick="event.stopPropagation()" class="w-full max-w-2xl bg-white h-full shadow-2xl border-l animate-in slide-in-from-right duration-300 flex flex-col">
             <div class="p-6 border-b flex items-center justify-between bg-[#faf9f8] sticky top-0">
@@ -226,12 +175,11 @@
         </div>
     </div>
 
-    <!-- SECURE READER -->
+    <!-- READER -->
     <div id="reader-view" class="hidden min-h-screen bg-[#323130] flex flex-col overflow-hidden">
-        <!-- Header Controls -->
-        <div class="bg-white border-b border-[#edebe9] p-2 flex items-center justify-between z-50">
+        <div class="bg-white border-b p-2 flex items-center justify-between z-50">
             <div class="flex items-center gap-1">
-                <button onclick="closeReader()" class="px-4 py-2 hover:bg-[#f3f2f1] rounded flex items-center gap-2 text-sm font-semibold"><i data-lucide="chevron-left" class="w-4 h-4"></i> Exit</button>
+                <button onclick="closeReader()" class="px-4 py-2 hover:bg-[#f3f2f1] rounded flex items-center gap-2 text-sm font-semibold transition-colors"><i data-lucide="chevron-left" class="w-4 h-4"></i> Exit</button>
                 <div class="w-[1px] h-6 bg-[#edebe9] mx-2"></div>
                 <h2 id="reader-title" class="text-[10px] font-bold text-[#323130] px-4 uppercase tracking-wider truncate max-w-[250px]">Document</h2>
             </div>
@@ -241,66 +189,48 @@
                     <button onclick="setReaderTheme('sepia')" class="p-1.5 hover:bg-white rounded-sm"><div class="w-3 h-3 rounded-full bg-[#f4ecd8] border"></div></button>
                     <button onclick="setReaderTheme('night')" class="p-1.5 hover:bg-white rounded-sm"><div class="w-3 h-3 rounded-full bg-black border"></div></button>
                 </div>
-                <div class="flex bg-[#f3f2f1] rounded-sm p-0.5">
+                <div class="flex bg-[#f3f2f1] rounded-sm p-0.5 ml-2">
                     <button onclick="zoomOut()" class="p-2 hover:bg-white rounded-sm text-[#605e5c]"><i data-lucide="minus" class="w-4 h-4"></i></button>
                     <span id="zoom-level" class="px-4 text-[10px] font-bold text-[#605e5c]">150%</span>
                     <button onclick="zoomIn()" class="p-2 hover:bg-white rounded-sm text-[#605e5c]"><i data-lucide="plus" class="w-4 h-4"></i></button>
                 </div>
             </div>
             <div class="flex items-center gap-3 mr-2">
-                <button onclick="toggleBookmark()" id="bookmark-btn" class="p-2 hover:bg-[#f3f2f1] rounded transition-colors text-[#a19f9d]"><i data-lucide="bookmark" id="bookmark-icon" class="w-4 h-4"></i></button>
+                <button onclick="toggleBookmark()" id="bookmark-btn" class="p-2 hover:bg-[#f3f2f1] rounded text-[#a19f9d]"><i data-lucide="bookmark" id="bookmark-icon" class="w-4 h-4"></i></button>
                 <div class="text-[11px] font-black text-[#323130] bg-[#f3f2f1] px-5 py-2 rounded-sm font-mono"><span id="current-page">1</span> / <span id="total-pages">?</span></div>
             </div>
         </div>
-        <!-- Canvas Area -->
         <div class="flex-1 overflow-auto flex flex-col items-center py-16 px-8 scroll-smooth custom-scrollbar bg-[#323130]" id="reader-scroll-container">
-            <div id="canvas-wrapper" class="relative shadow-2xl transition-all duration-300 origin-top">
-                <canvas id="pdf-canvas"></canvas>
-            </div>
+            <div id="canvas-wrapper" class="relative shadow-2xl transition-all duration-300 origin-top shadow-black/80"><canvas id="pdf-canvas"></canvas></div>
         </div>
-        <!-- Bottom Nav -->
         <div class="bg-white border-t p-3 flex items-center justify-center gap-12">
-            <button onclick="prevPage()" id="prev-btn" class="flex items-center gap-3 px-10 py-3 hover:bg-[#f3f2f1] rounded-sm text-xs font-bold disabled:opacity-30 uppercase tracking-widest transition-all"><i data-lucide="chevron-left" class="w-4 h-4"></i> Previous</button>
+            <button onclick="prevPage()" id="prev-btn" class="flex items-center gap-3 px-10 py-3 hover:bg-[#f3f2f1] rounded-sm text-xs font-bold disabled:opacity-30 uppercase tracking-widest"><i data-lucide="chevron-left" class="w-4 h-4"></i> Previous</button>
             <div class="h-6 w-[1px] bg-[#edebe9]"></div>
-            <button onclick="nextPage()" id="next-btn" class="flex items-center gap-3 px-10 py-3 hover:bg-[#f3f2f1] rounded-sm text-xs font-bold disabled:opacity-30 uppercase tracking-widest transition-all">Next <i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+            <button onclick="nextPage()" id="next-btn" class="flex items-center gap-3 px-10 py-3 hover:bg-[#f3f2f1] rounded-sm text-xs font-bold disabled:opacity-30 uppercase tracking-widest">Next <i data-lucide="chevron-right" class="w-4 h-4"></i></button>
         </div>
     </div>
 
     <script>
-        // CONFIGURATION
-        const API_URL = "https://script.google.com/macros/s/AKfycbzUWEz5nDSNe_W4zKRj9uYACXHpOwCSX8-KSP9pFSwAjYOUW0l1hOH2woDtbFG6oZDX/exec"; // PASTE YOUR DEPLOYED WEB APP URL HERE
+        // CONFIG
+        const API_URL = "AKfycbzUWEz5nDSNe_W4zKRj9uYACXHpOwCSX8-KSP9pFSwAjYOUW0l1hOH2woDtbFG6oZDX"; // PASTE YOUR URL HERE
         const WHATSAPP = "919148330565";
         const ADMIN = "rajesh@raveone.in";
 
-        const CATALOG = [
-            { id: "book1", title: "Seva, Shraddha, Siddhi", price: 499, cat: "Wisdom", color: "#0078d4", time: "2.5h", type: "Premium", desc: "How to succeed quietly through character, commitment, and clarity. Inspired by Sri Ramakrishna." },
-            { id: "book2", title: "Vedic SRK Framework", price: 899, cat: "Business", color: "#d83b01", time: "4h", type: "Premium", desc: "Management roadmap blending Vedic principles with modern business excellence." },
-            { id: "book3", title: "ISO 9001 Simplified", price: 699, cat: "Business", color: "#107c10", time: "3.5h", type: "Premium", desc: "A practical guide to implementing quality standards without bureaucracy." },
-            { id: "book4", title: "As a Man Thinketh", price: "OPEN", cat: "Wisdom", color: "#6366f1", time: "1h", type: "Open", desc: "The classic James Allen masterpiece on the power of thought." },
-            { id: "book5", title: "MSME Growth Handbook", price: "OPEN", cat: "Business", color: "#0ea5e9", time: "2h", type: "Open", desc: "Curated collection of public growth strategies for Indian small enterprises." }
-        ];
-
-        const BLOGS = [
-            { id: "b1", title: "The Quiet Success Mindset", cat: "Culture", desc: "Why silent discipline often outlasts loud competition.", content: "<p>Success is often portrayed as a race. However, the deepest roots are found in silence.</p><p>When an employee focuses on character (Siddhi) rather than visibility, trust builds naturally.</p>" },
-            { id: "b2", title: "Beyond the ISO Checklist", cat: "Quality", desc: "How MSMEs turn documentation into a growth engine.", content: "<p>Many see ISO 9001 as a pile of files. This is a mistake. Documentation is for your process, not the auditor.</p>" }
-        ];
-
-        let userEmail = localStorage.getItem('raveone_email') || '';
+        // APP DATA (Syncs from backend in init)
+        let CATALOG = []; 
+        let BLOGS = [];
         let authBooks = [];
         let isSubscribed = false;
+        let userEmail = localStorage.getItem('raveone_email') || '';
         let pdfDoc = null, pageNum = 1, pageRendering = false, activeBookId = "", scale = 1.4;
 
-        document.addEventListener('DOMContentLoaded', () => { 
-            lucide.createIcons(); 
-            if(userEmail) init(userEmail); 
-            else showView('login-view');
-        });
+        document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); if(userEmail) init(userEmail); else showView('login-view'); });
 
         async function handleLogin() {
             const email = document.getElementById('email-input').value.trim().toLowerCase();
             if(!email) return;
             toggleLoading(true);
-            try { await init(email); } finally { toggleLoading(false); }
+            try { await init(email); } catch(e) { showError("Login failed. Check internet."); } finally { toggleLoading(false); }
         }
 
         async function init(email) {
@@ -308,40 +238,49 @@
             localStorage.setItem('raveone_email', email);
             document.getElementById('user-display-short').innerText = email.split('@')[0];
             document.getElementById('user-initial').innerText = email[0].toUpperCase();
-            
-            if (email === ADMIN) {
-                authBooks = CATALOG.map(b => b.title); isSubscribed = true;
-            } else if(API_URL) {
+
+            // Admin Hardcode Bypass for UI Testing
+            if (email === ADMIN && !API_URL) {
+                CATALOG = [
+                    { ID: "book1", Title: "Seva, Shraddha, Siddhi", Price: 499, Category: "Wisdom", Color: "#0078d4", ReadingTime: "2.5h", Type: "Premium", Description: "Guide to character." },
+                    { ID: "book2", Title: "Vedic SRK Framework", Price: 899, Category: "Business", Color: "#d83b01", ReadingTime: "4h", Type: "Premium", Description: "MSME Roadmap." },
+                    { ID: "book3", Title: "ISO 9001 Simplified", Price: 699, Category: "Business", Color: "#107c10", ReadingTime: "3.5h", Type: "Premium", Description: "Quality standards." }
+                ];
+                authBooks = CATALOG.map(b => b.Title);
+                isSubscribed = true;
+            } else if (API_URL) {
                 const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getLibrary', email }) });
                 const data = await resp.json();
+                CATALOG = data.catalog || [];
+                BLOGS = data.blogs || [];
                 authBooks = data.authorizedTitles || [];
                 isSubscribed = data.isSubscribed || false;
             }
 
-            document.getElementById('sub-status-text').innerText = isSubscribed ? "Pro Library Pass" : "Basic Reader";
+            document.getElementById('sub-status-text').innerText = isSubscribed ? "Pro Library Pass" : "Verified Reader";
             showView('dashboard-view');
         }
 
         function renderLibrary(filter = "") {
             const grid = document.getElementById('book-grid');
             if(!grid) return; grid.innerHTML = '';
+            const filtered = CATALOG.filter(b => b.Title.toLowerCase().includes(filter.toLowerCase()) || b.Category.toLowerCase().includes(filter.toLowerCase()));
             
-            const filtered = CATALOG.filter(b => b.title.toLowerCase().includes(filter.toLowerCase()) || b.cat.toLowerCase().includes(filter.toLowerCase()));
             filtered.forEach(book => {
-                const hasAccess = authBooks.includes(book.title) || isSubscribed || book.type === 'Open';
-                const progress = localStorage.getItem(`prog_${userEmail}_${book.id}`) || 0;
+                const hasAccess = authBooks.includes(book.Title) || isSubscribed || book.Type === 'Open';
+                const progress = localStorage.getItem(`prog_${userEmail}_${book.ID}`) || 0;
                 const card = document.createElement('div');
                 card.className = "ms-card p-4 flex flex-col animate-in fade-in duration-300";
                 card.onclick = () => showDetail(book);
                 card.innerHTML = `
-                    <div class="aspect-[3/4.2] bg-[#f3f2f1] rounded-sm mb-4 flex items-center justify-center relative overflow-hidden group border border-[#edebe9]">
-                        <div class="text-4xl font-black opacity-30" style="color: ${book.color}">${book.title[0]}</div>
-                        <div class="absolute bottom-0 left-0 right-0 h-1" style="background-color: ${book.color}; opacity: 0.6"></div>
-                        ${hasAccess ? '<div class="absolute top-2 right-2 text-[#107c10] bg-white rounded-full shadow-sm"><i data-lucide="check-circle-2" class="w-4 h-4 fill-white"></i></div>' : ''}
+                    <div class="aspect-[3/4.2] bg-[#f3f2f1] rounded-sm mb-4 flex items-center justify-center relative overflow-hidden group border">
+                        <div class="text-4xl font-black opacity-30" style="color: ${book.Color}">${book.Title[0]}</div>
+                        <div class="absolute bottom-0 left-0 right-0 h-1" style="background-color: ${book.Color}; opacity: 0.6"></div>
+                        ${hasAccess ? '<div class="absolute top-2 right-2 text-[#107c10] bg-white rounded-full shadow-sm p-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i></div>' : ''}
                     </div>
-                    <h3 class="text-xs font-bold text-[#323130] truncate mb-1">${book.title}</h3>
+                    <h3 class="text-xs font-bold text-[#323130] truncate mb-1">${book.Title}</h3>
                     <div class="mt-auto flex justify-between items-center border-t pt-3">
-                        <span class="text-[9px] font-black text-[#323130] uppercase">${hasAccess ? progress + '%' : book.price}</span>
+                        <span class="text-[9px] font-black text-[#323130] uppercase">${hasAccess ? progress + '%' : '₹'+book.Price}</span>
                         <span class="text-[9px] text-[#0078d4] font-bold uppercase tracking-tighter">Properties</span>
                     </div>
                 `;
@@ -359,33 +298,34 @@
                 const card = document.createElement('div');
                 card.className = "ms-card p-8 flex flex-col gap-4 group";
                 card.onclick = () => {
-                    document.getElementById('blog-detail-title').innerText = post.title;
-                    document.getElementById('blog-detail-content').innerHTML = post.content;
-                    document.getElementById('blog-detail-cat').innerText = post.cat;
+                    document.getElementById('blog-detail-title').innerText = post.Title;
+                    document.getElementById('blog-detail-content').innerHTML = post.Content;
+                    document.getElementById('blog-detail-cat').innerText = post.Category;
                     document.getElementById('blog-modal').classList.remove('hidden');
                     lucide.createIcons();
                 };
-                card.innerHTML = `<span class="text-[9px] font-bold text-[#0078d4] uppercase tracking-widest">${post.cat}</span>
-                                 <h3 class="text-xl font-bold group-hover:text-[#0078d4]">${post.title}</h3>
-                                 <p class="text-sm text-[#605e5c] line-clamp-2">${post.desc}</p>`;
+                card.innerHTML = `<span class="text-[9px] font-bold text-[#0078d4] uppercase tracking-widest">${post.Category}</span>
+                                 <h3 class="text-xl font-bold group-hover:text-[#0078d4] transition-colors">${post.Title}</h3>
+                                 <p class="text-sm text-[#605e5c] line-clamp-2">${post.Description}</p>`;
                 grid.appendChild(card);
             });
         }
 
         function showDetail(book) {
-            activeBookId = book.id;
-            const hasAccess = authBooks.includes(book.title) || isSubscribed || book.type === 'Open';
-            document.getElementById('detail-title').innerText = book.title;
-            document.getElementById('detail-desc').innerText = book.desc;
-            document.getElementById('detail-time').innerText = book.time;
-            document.getElementById('detail-price').innerText = book.price === 'OPEN' ? 'Free Access' : '₹'+book.price;
-            document.getElementById('detail-cover').style.backgroundColor = book.color;
-            document.getElementById('detail-cover').innerText = book.title[0];
+            activeBookId = book.ID;
+            const hasAccess = authBooks.includes(book.Title) || isSubscribed || book.Type === 'Open';
+            document.getElementById('detail-title').innerText = book.Title;
+            document.getElementById('detail-desc').innerText = book.Description;
+            document.getElementById('detail-time').innerText = book.ReadingTime || "N/A";
+            document.getElementById('detail-price').innerText = book.Type === 'Open' ? 'Free Access' : '₹'+book.Price;
+            document.getElementById('detail-cover').style.backgroundColor = book.Color;
+            document.getElementById('detail-cover').innerText = book.Title[0];
             
             const cont = document.getElementById('detail-actions');
             cont.innerHTML = hasAccess ? 
-                `<button onclick="openBook('${book.title}', '${book.id}')" class="w-full ms-btn-primary py-4 uppercase text-[10px] tracking-widest shadow-lg">Open Document</button>` :
-                `<button onclick="openPay('${book.title}', '${book.price}')" class="w-full ms-btn-primary py-4 uppercase text-[10px] tracking-widest shadow-lg">Verify License</button>`;
+                `<button onclick="openBook('${book.Title}', '${book.ID}')" class="w-full ms-btn-primary py-4 uppercase text-[10px] tracking-widest shadow-lg">Open Document</button>` :
+                `<button onclick="openPay('${book.Title}', ${book.Price})" class="w-full ms-btn-primary py-4 uppercase text-[10px] tracking-widest shadow-lg mb-4">Verify License</button>
+                 <button onclick="openSubModal()" class="w-full bg-white border border-[#0078d4] text-[#0078d4] py-4 uppercase text-[10px] tracking-widest font-bold">Or Subscribe to Library</button>`;
             document.getElementById('detail-modal').classList.remove('hidden');
             lucide.createIcons();
         }
@@ -397,7 +337,7 @@
             document.getElementById('canvas-wrapper').innerHTML = '<div class="py-48 text-center text-[#a19f9d] text-[10px] font-bold uppercase tracking-widest">Authorized Decryption...</div>';
 
             if(userEmail === ADMIN && !API_URL) {
-                document.getElementById('canvas-wrapper').innerHTML = '<div class="bg-white p-20 border fluent-shadow max-w-sm text-center">Admin Sandbox Mode. Please connect GWS API for real PDFs.</div>';
+                document.getElementById('canvas-wrapper').innerHTML = '<div class="bg-white p-20 border fluent-shadow max-w-sm text-center">Admin Sandbox Mode. Connect GAS for real PDFs.</div>';
                 return;
             }
 
@@ -405,8 +345,8 @@
                 const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'fetchBook', email: userEmail, bookTitle: title }) });
                 const data = await resp.json();
                 if(data.base64) loadPDF(atob(data.base64));
-                else { alert("Security alert: Stream blocked."); closeReader(); }
-            } catch (err) { alert("Secure endpoint offline."); closeReader(); }
+                else { alert("Stream Blocked."); closeReader(); }
+            } catch (err) { alert("Backend offline."); closeReader(); }
         }
 
         function loadPDF(bin) {
@@ -422,10 +362,12 @@
         }
 
         function renderPage(num) {
+            if (!pdfDoc) return;
             pageRendering = true;
             pdfDoc.getPage(num).then(page => {
                 const vp = page.getViewport({ scale: scale });
                 const canv = document.getElementById('pdf-canvas');
+                if(!canv) return;
                 const ctx = canv.getContext('2d');
                 canv.height = vp.height; canv.width = vp.width;
                 page.render({ canvasContext: ctx, viewport: vp }).promise.then(() => { pageRendering = false; });
@@ -439,28 +381,32 @@
             updateBookmarkIcon();
         }
 
-        // Feature Controller Helpers
-        function showView(v) { ['login-view','dashboard-view','reader-view'].forEach(id => document.getElementById(id)?.classList.add('hidden')); document.getElementById(v)?.classList.remove('hidden'); if(v==='dashboard-view') { renderLibrary(); renderBlog(); updateContinueSection(); } }
+        // Helpers
+        function showView(v) { 
+            ['login-view','dashboard-view','reader-view'].forEach(id => document.getElementById(id)?.classList.add('hidden')); 
+            document.getElementById(v)?.classList.remove('hidden'); 
+            if(v==='dashboard-view') { renderLibrary(); renderBlog(); updateContinueSection(); } 
+        }
         function switchContext(c, el) { document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); document.getElementById('library-context').classList.toggle('hidden', c !== 'library'); document.getElementById('blog-context').classList.toggle('hidden', c !== 'blog'); }
-        function updateContinueSection() { const last = localStorage.getItem(`last_accessed_${userEmail}`); if(!last) return; const b = CATALOG.find(x => x.id === last); if(b && (authBooks.includes(b.title) || isSubscribed || b.type === 'Open')) { document.getElementById('continue-section').classList.remove('hidden'); document.getElementById('continue-title').innerText = b.title; document.getElementById('continue-card').onclick = () => openBook(b.title, b.id); } }
+        function updateContinueSection() { const last = localStorage.getItem(`last_accessed_${userEmail}`); if(!last) return; const b = CATALOG.find(x => x.ID === last); if(b) { document.getElementById('continue-section').classList.remove('hidden'); document.getElementById('continue-title').innerText = b.Title; document.getElementById('continue-card').onclick = () => openBook(b.Title, b.ID); } }
         function zoomIn() { scale += 0.2; renderPage(pageNum); document.getElementById('zoom-level').innerText = Math.round(scale*100)+'%'; }
         function zoomOut() { if(scale > 0.6) { scale -= 0.2; renderPage(pageNum); document.getElementById('zoom-level').innerText = Math.round(scale*100)+'%'; } }
         function toggleBookmark() { const key = `bm_${userEmail}_${activeBookId}`; let bms = JSON.parse(localStorage.getItem(key)) || []; if(bms.includes(pageNum)) bms = bms.filter(p => p !== pageNum); else bms.push(pageNum); localStorage.setItem(key, JSON.stringify(bms)); updateBookmarkIcon(); }
         function updateBookmarkIcon() { const bms = JSON.parse(localStorage.getItem(`bm_${userEmail}_${activeBookId}`)) || []; document.getElementById('bookmark-icon').classList.toggle('fill-[#0078d4]', bms.includes(pageNum)); }
         function prevPage() { if(pageNum > 1 && !pageRendering) { pageNum--; renderPage(pageNum); document.getElementById('reader-scroll-container').scrollTop = 0; } }
-        function nextPage() { if(pageNum < pdfDoc.numPages && !pageRendering) { pageNum++; renderPage(pageNum); document.getElementById('reader-scroll-container').scrollTop = 0; } }
-        function setReaderTheme(t) { const c = document.getElementById('pdf-canvas'); c.className = ""; if(t !== 'original') c.classList.add('pdf-'+t); }
+        function nextPage() { if(pdfDoc && pageNum < pdfDoc.numPages && !pageRendering) { pageNum++; renderPage(pageNum); document.getElementById('reader-scroll-container').scrollTop = 0; } }
+        function setReaderTheme(t) { const c = document.getElementById('pdf-canvas'); if(!c) return; c.className = ""; if(t !== 'original') c.classList.add('pdf-'+t); }
         function closeReader() { pdfDoc = null; showView('dashboard-view'); }
         function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
         function closeBlog() { document.getElementById('blog-modal').classList.add('hidden'); }
-        function openPay(t, p) { document.getElementById('payment-book-title').innerText = t; document.getElementById('payment-book-price').innerText = '₹'+p; document.getElementById('payment-modal').classList.remove('hidden'); }
+        function openPay(t, p) { document.getElementById('payment-amt').innerText = p; document.getElementById('payment-modal').classList.remove('hidden'); }
         function closePayment() { document.getElementById('payment-modal').classList.add('hidden'); }
         function openSubModal() { document.getElementById('sub-modal').classList.remove('hidden'); }
         function handleLogout() { localStorage.clear(); location.reload(); }
-        function toggleLoading(l) { document.getElementById('btn-spinner').classList.toggle('hidden', !l); document.getElementById('btn-text').innerText = l ? 'Verifying...' : 'Next'; }
+        function toggleLoading(l) { document.getElementById('btn-spinner').classList.toggle('hidden', !l); document.getElementById('btn-text').innerText = l ? 'Validating...' : 'Next'; }
         function showError(m) { const e = document.getElementById('login-error'); document.getElementById('error-message').innerText = m; e.classList.remove('hidden'); }
         function copyUPI() { navigator.clipboard.writeText('rajesh@upi'); alert("Copied."); }
-        function notifyAdmin() { const utr = document.getElementById('utr-input').value; window.open(`https://wa.me/${WHATSAPP}?text=Ref: ${utr} Email: ${userEmail}`, '_blank'); }
+        function notifyAdmin() { const utr = document.getElementById('utr-input').value; window.open(`https://wa.me/${WHATSAPP}?text=AuthRequest: ${userEmail} Ref: ${utr}`, '_blank'); }
         function handleSearch() { renderLibrary(document.getElementById('search-input').value); }
         function filterCategory(c) { document.getElementById('nav-home').click(); renderLibrary(c); }
     </script>
