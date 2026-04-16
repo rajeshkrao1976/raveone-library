@@ -43,7 +43,7 @@
                     <p id="error-message" class="font-bold"></p>
                 </div>
                 <div class="flex items-center justify-between">
-                    <p class="text-[10px] text-[#605e5c] font-bold uppercase tracking-wider italic">Secure GWS Auth v3.5</p>
+                    <p class="text-[10px] text-[#605e5c] font-bold uppercase tracking-wider italic">Secure GWS Auth v3.6</p>
                     <button onclick="handleLogin()" id="login-btn" class="ms-btn-primary px-10 py-2 flex items-center gap-2 text-sm shadow-sm transition-all active:scale-95">
                         <span id="btn-text">Next</span>
                         <i id="btn-spinner" data-lucide="loader-2" class="hidden spinner w-4 h-4 text-white"></i>
@@ -86,7 +86,7 @@
                     <div class="w-8 h-8 bg-[#0078d4] text-white rounded-full flex items-center justify-center text-xs font-bold" id="user-initial">R</div>
                     <div class="flex-1 overflow-hidden">
                         <p id="user-display-short" class="text-xs font-bold truncate">User</p>
-                        <p id="membership-label" class="text-[9px] text-[#605e5c] font-bold uppercase tracking-tighter">Reader</p>
+                        <p id="membership-label" class="text-[9px] text-[#605e5c] font-bold uppercase tracking-tighter">Verified Reader</p>
                     </div>
                     <button onclick="handleLogout()" class="text-[#a19f9d] hover:text-[#a4262c] p-1 transition-colors"><i data-lucide="log-out" class="w-4 h-4"></i></button>
                 </div>
@@ -151,7 +151,7 @@
                     <li class="flex items-center gap-3"><i data-lucide="check" class="text-emerald-600 w-4 h-4"></i> Unlock all Open Access archives</li>
                     <li class="flex items-center gap-3"><i data-lucide="check" class="text-emerald-600 w-4 h-4"></i> Multi-device reading synchronization</li>
                 </ul>
-                <button onclick="window.open('https://wa.me/911234567890?text=Activation Request: ' + userEmail, '_blank')" class="ms-btn-primary w-full py-4 uppercase text-xs tracking-widest shadow-lg">Activate Pass Now</button>
+                <button onclick="window.open('https://wa.me/911234567890?text=Monthly Pass Activation Request: ' + userEmail, '_blank')" class="ms-btn-primary w-full py-4 uppercase text-xs tracking-widest shadow-lg">Activate Pass Now</button>
             </div>
         </div>
     </div>
@@ -159,7 +159,7 @@
     <div id="detail-modal" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-[100] flex justify-end">
         <div onclick="event.stopPropagation()" class="w-full max-w-md bg-white h-full shadow-2xl border-l p-10 flex flex-col overflow-y-auto animate-in slide-in-from-right duration-300">
             <div id="detail-cover" class="w-full aspect-[3/4] bg-[#0078d4] rounded mb-10 flex items-center justify-center text-white text-6xl font-black border-8 border-white shadow-xl">R</div>
-            <h2 id="detail-title" class="text-3xl font-bold mb-4 leading-tight">Book Title</h2>
+            <h2 id="detail-title" class="text-3xl font-bold mb-4 leading-tight text-balance">Book Title</h2>
             <p id="detail-desc" class="text-sm text-[#605e5c] mb-10 pb-10 border-b leading-relaxed"></p>
             <div id="detail-actions" class="space-y-4"></div>
             <button onclick="closeDetail()" class="mt-8 text-[10px] text-slate-400 font-bold uppercase hover:underline w-full text-center transition-all">Close Properties</button>
@@ -167,14 +167,14 @@
     </div>
 
     <div id="payment-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
-        <div class="bg-white rounded-sm w-full max-w-lg shadow-2xl border p-10">
+        <div class="bg-white rounded-sm w-full max-w-lg shadow-2xl border p-10 animate-in zoom-in duration-200">
             <h3 class="font-bold text-lg mb-8 text-[#323130]">License Verification</h3>
             <div class="bg-[#f3f2f1] p-6 border-l-4 border-[#0078d4] mb-8">
                 <p class="text-[10px] font-bold text-[#605e5c] uppercase mb-2">Transfer ₹<span id="pay-amt-display"></span> to UPI:</p>
                 <p class="text-lg font-bold font-mono">rajesh@upi</p>
             </div>
-            <input type="text" id="utr-input" placeholder="UTR Number" class="w-full px-4 py-3 border border-[#d2d0ce] outline-none text-sm mb-6 focus:border-[#0078d4] bg-[#faf9f8]">
-            <button onclick="notifyAdmin()" class="w-full bg-[#107c10] hover:bg-[#0b5a0b] text-white font-bold py-4 rounded-sm text-xs uppercase tracking-widest shadow-lg flex items-center justify-center gap-3">
+            <input type="text" id="utr-input" placeholder="UTR / Transaction ID Number" class="w-full px-4 py-3 border border-[#d2d0ce] outline-none text-sm mb-6 focus:border-[#0078d4] bg-[#faf9f8]">
+            <button onclick="notifyAdmin()" class="w-full bg-[#107c10] hover:bg-[#0b5a0b] text-white font-bold py-4 rounded-sm text-xs uppercase tracking-widest shadow-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98]">
                 <i data-lucide="send" class="w-4 h-4"></i> Submit Request
             </button>
         </div>
@@ -182,13 +182,13 @@
 
     <!-- SECURE READER -->
     <div id="reader-view" class="hidden min-h-screen bg-[#323130] flex flex-col overflow-hidden">
-        <div class="bg-white border-b border-[#edebe9] p-2 flex items-center justify-between z-50">
+        <div class="bg-white border-b border-[#edebe9] p-2 flex items-center justify-between z-50 shadow-md">
             <button onclick="closeReader()" class="px-4 py-2 hover:bg-[#f3f2f1] rounded flex items-center gap-2 text-sm font-semibold transition-colors"><i data-lucide="chevron-left" class="w-4 h-4"></i> Exit</button>
             <div class="flex items-center gap-2">
                 <div class="flex bg-[#f3f2f1] rounded-sm p-0.5 border">
-                    <button onclick="setReaderTheme('original')" class="p-1.5 hover:bg-white rounded-sm"><div class="w-3 h-3 rounded-full bg-white border"></div></button>
-                    <button onclick="setReaderTheme('sepia')" class="p-1.5 hover:bg-white rounded-sm"><div class="w-3 h-3 rounded-full bg-[#f4ecd8] border"></div></button>
-                    <button onclick="setReaderTheme('night')" class="p-1.5 hover:bg-white rounded-sm"><div class="w-3 h-3 rounded-full bg-black border border-white/20"></div></button>
+                    <button onclick="setReaderTheme('original')" class="p-1.5 hover:bg-white rounded-sm transition-all"><div class="w-3 h-3 rounded-full bg-white border border-[#d2d0ce]"></div></button>
+                    <button onclick="setReaderTheme('sepia')" class="p-1.5 hover:bg-white rounded-sm transition-all"><div class="w-3 h-3 rounded-full bg-[#f4ecd8] border border-[#d2d0ce]"></div></button>
+                    <button onclick="setReaderTheme('night')" class="p-1.5 hover:bg-white rounded-sm transition-all"><div class="w-3 h-3 rounded-full bg-black border border-white/20"></div></button>
                 </div>
                 <div class="flex bg-[#f3f2f1] rounded-sm p-0.5 ml-2">
                     <button onclick="zoomOut()" class="p-2 hover:bg-white rounded-sm text-[#605e5c] transition-all"><i data-lucide="minus" class="w-4 h-4"></i></button>
@@ -201,8 +201,10 @@
             </div>
         </div>
         <!-- Scroll Surface -->
-        <div class="flex-1 overflow-auto flex flex-col items-center py-16 px-8 bg-[#323130]" id="reader-scroll-container">
-            <div id="canvas-wrapper" class="relative shadow-2xl transition-all duration-300 origin-top shadow-black/80 flex flex-col items-center"></div>
+        <div class="flex-1 overflow-auto flex flex-col items-center py-16 px-8 bg-[#323130] custom-scrollbar" id="reader-scroll-container">
+            <div id="canvas-wrapper" class="relative shadow-2xl transition-all duration-300 origin-top shadow-black/80 flex flex-col items-center">
+                <!-- PDF Canvas will be injected here -->
+            </div>
         </div>
         <!-- Navigation Bar -->
         <div class="bg-white border-t p-3 flex items-center justify-center gap-12 shadow-md">
@@ -217,8 +219,9 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbzUWEz5nDSNe_W4zKRj9uYACXHpOwCSX8-KSP9pFSwAjYOUW0l1hOH2woDtbFG6oZDX/exec"; // PASTE YOUR URL HERE
         const ADMIN = "rajesh@raveone.in";
 
-        // PDF.js Worker Config (Crucial for loading)
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        // PDF.js Global Initialization
+        const PDFJS = window['pdfjs-dist/build/pdf'];
+        PDFJS.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         let CATALOG = [], BLOGS = [], authBooks = [], isSubscribed = false;
         let userEmail = localStorage.getItem('raveone_email') || '';
@@ -234,7 +237,7 @@
             const email = document.getElementById('email-input').value.trim().toLowerCase();
             if(!email) return;
             toggleLoading(true);
-            try { await init(email); } catch(e) { showError("Login connection failed. Verify API_URL."); } finally { toggleLoading(false); }
+            try { await init(email); } catch(e) { showError("Connection timed out. Verify your API link."); } finally { toggleLoading(false); }
         }
 
         async function init(email) {
@@ -246,8 +249,7 @@
             if (email === ADMIN && !API_URL) {
                 CATALOG = [
                     { ID: "b1", Title: "Seva, Shraddha, Siddhi - eBook by Rajesh Krishnamurthy Rao", Price: 499, Category: "Wisdom", Color: "#0078d4", ReadingTime: "2.5h", Type: "Premium", Description: "Guide to character." },
-                    { ID: "b2", Title: "Vedic SRK Framework  - by Rajesh Krishnamurthy Rao", Price: 899, Category: "Business", Color: "#d83b01", ReadingTime: "4h", Type: "Premium", Description: "MSME Roadmap." },
-                    { ID: "b3", Title: "ISO 9001_ Simplified for MSMEs — A Practical Guide to Achieving Quality Excellence-", Price: 699, Category: "Business", Color: "#107c10", ReadingTime: "3.5h", Type: "Premium", Description: "ISO simplified." }
+                    { ID: "b2", Title: "Vedic SRK Framework  - by Rajesh Krishnamurthy Rao", Price: 899, Category: "Business", Color: "#d83b01", ReadingTime: "4h", Type: "Premium", Description: "MSME Roadmap." }
                 ];
                 authBooks = CATALOG.map(b => b.Title); isSubscribed = true;
             } else if(API_URL) {
@@ -257,7 +259,8 @@
                 authBooks = data.authorizedTitles || []; isSubscribed = data.isSubscribed || false;
             }
 
-            document.getElementById('pass-badge').innerText = isSubscribed ? "Pass: Active" : "Pass: Inactive";
+            const badge = document.getElementById('pass-badge');
+            if(badge) badge.innerText = isSubscribed ? "Pass: Active" : "Pass: Inactive";
             showView('dashboard-view');
         }
 
@@ -276,7 +279,7 @@
                     <div class="aspect-[3/4.2] bg-[#f3f2f1] rounded-sm mb-4 flex items-center justify-center relative overflow-hidden group">
                         <div class="text-4xl font-black opacity-30" style="color: ${book.Color}">${book.Title[0]}</div>
                         <div class="absolute bottom-0 left-0 right-0 h-1" style="background-color: ${book.Color}; opacity: 0.6"></div>
-                        ${hasAccess ? '<div class="absolute top-2 right-2 text-[#107c10] bg-white rounded-full shadow-sm p-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i></div>' : ''}
+                        ${hasAccess ? '<div class="absolute top-2 right-2 text-[#107c10] bg-white rounded-full shadow-sm p-1 border"><i data-lucide="check-circle-2" class="w-3 h-3"></i></div>' : ''}
                     </div>
                     <h3 class="text-xs font-bold truncate text-[#323130]">${book.Title}</h3>
                     <div class="mt-auto pt-3 flex justify-between items-center border-t border-[#f3f2f1] text-[9px] font-black uppercase tracking-tighter">
@@ -316,10 +319,10 @@
             activeBookId = id; showView('reader-view');
             document.getElementById('reader-title').innerText = title;
             const wrapper = document.getElementById('canvas-wrapper');
-            wrapper.innerHTML = '<div class="py-48 text-center text-[#a19f9d] text-[10px] font-bold uppercase tracking-widest animate-pulse">Decrypting secure container...</div>';
+            wrapper.innerHTML = '<div class="py-48 text-center text-[#a19f9d] text-[10px] font-bold uppercase tracking-widest animate-pulse">Initializing secure decryption...</div>';
 
             if(userEmail === ADMIN && !API_URL) {
-                wrapper.innerHTML = '<div class="bg-white p-20 border fluent-shadow max-w-sm text-center mx-auto mt-20"><i data-lucide="shield-check" class="mx-auto mb-4 text-emerald-500"></i><p class="font-bold">Admin Sandbox Preview</p><p class="text-xs text-slate-500 mt-2">Connect your Google Apps Script URL to render production PDF data.</p></div>';
+                wrapper.innerHTML = '<div class="bg-white p-20 border fluent-shadow max-w-sm text-center mx-auto mt-20 shadow-xl rounded"><i data-lucide="shield-check" class="mx-auto mb-4 text-emerald-500 w-12 h-12"></i><p class="font-bold">Admin Workspace Preview</p><p class="text-xs text-slate-500 mt-2">The interface is ready. Connect your backend to render the book contents.</p></div>';
                 lucide.createIcons();
                 return;
             }
@@ -328,20 +331,22 @@
                 const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'fetchBook', email: userEmail, bookTitle: title }) });
                 const data = await resp.json();
                 if(data.base64) {
-                    const bin = atob(data.base64);
-                    const uint8 = new Uint8Array(bin.length);
-                    for(let i=0; i<bin.length; i++) uint8[i] = bin.charCodeAt(i);
-                    loadPDF(uint8);
+                    // Modern decoded binary generation
+                    const binStr = atob(data.base64);
+                    const bytes = new Uint8Array(binStr.length);
+                    for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+                    loadPDF(bytes);
                 } else { 
-                    alert("Verification error or missing file."); 
+                    alert("Unauthorized access or corrupted stream."); 
                     closeReader(); 
                 }
-            } catch (err) { alert("Backend offline. Please try again later."); closeReader(); }
+            } catch (err) { alert("Backend synchronization failed. Please refresh."); closeReader(); }
         }
 
-        function loadPDF(uint8) {
-            pdfjsLib.getDocument({ data: uint8 }).promise.then(doc => {
-                pdfDoc = doc; document.getElementById('total-pages').innerText = doc.numPages;
+        function loadPDF(bytes) {
+            PDFJS.getDocument({ data: bytes }).promise.then(doc => {
+                pdfDoc = doc; 
+                document.getElementById('total-pages').innerText = doc.numPages;
                 const wrapper = document.getElementById('canvas-wrapper');
                 wrapper.innerHTML = ''; 
                 const canv = document.createElement('canvas');
@@ -351,7 +356,7 @@
                 pageNum = parseInt(localStorage.getItem(`last_page_${userEmail}_${activeBookId}`)) || 1;
                 if (pageNum > pdfDoc.numPages) pageNum = 1;
                 renderPage(pageNum);
-            }).catch(e => { alert("Reader Engine Initialization Failed"); closeReader(); });
+            }).catch(e => { alert("Failed to initialize Reader Engine."); closeReader(); });
         }
 
         function renderPage(num) {
@@ -362,7 +367,8 @@
                 if(!canv) return;
                 const ctx = canv.getContext('2d');
                 canv.height = vp.height; canv.width = vp.width;
-                page.render({ canvasContext: ctx, viewport: vp }).promise.then(() => { 
+                const renderContext = { canvasContext: ctx, viewport: vp };
+                page.render(renderContext).promise.then(() => { 
                     pageRendering = false; 
                 });
             });
@@ -375,10 +381,23 @@
             updateBookmarkIcon();
         }
 
-        // Feature Helpers
-        function openSubHub() { document.getElementById('sub-modal').classList.remove('hidden'); lucide.createIcons(); }
-        function showView(v) { ['login-view','dashboard-view','reader-view'].forEach(id => document.getElementById(id)?.classList.add('hidden')); document.getElementById(v)?.classList.remove('hidden'); if(v==='dashboard-view') renderLibrary(); }
-        function switchContext(c, el) { document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); document.getElementById('library-context').classList.toggle('hidden', c !== 'library'); document.getElementById('blog-context').classList.toggle('hidden', c !== 'blog'); }
+        // --- GLOBAL ACTION HELPERS ---
+        function openSubHub() { 
+            const modal = document.getElementById('sub-modal');
+            if(modal) modal.classList.remove('hidden'); 
+            lucide.createIcons();
+        }
+        function showView(v) { 
+            ['login-view','dashboard-view','reader-view'].forEach(id => document.getElementById(id)?.classList.add('hidden')); 
+            document.getElementById(v)?.classList.remove('hidden'); 
+            if(v==='dashboard-view') renderLibrary(); 
+        }
+        function switchContext(c, el) { 
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active')); 
+            if(el) el.classList.add('active');
+            document.getElementById('library-context').classList.toggle('hidden', c !== 'library');
+            document.getElementById('blog-context').classList.toggle('hidden', c !== 'blog');
+        }
         function closeReader() { pdfDoc = null; showView('dashboard-view'); }
         function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
         function closePayment() { document.getElementById('payment-modal').classList.add('hidden'); }
@@ -389,10 +408,10 @@
         function prevPage() { if(pageNum > 1 && !pageRendering) { pageNum--; renderPage(pageNum); document.getElementById('reader-scroll-container').scrollTop = 0; } }
         function nextPage() { if(pdfDoc && pageNum < pdfDoc.numPages && !pageRendering) { pageNum++; renderPage(pageNum); document.getElementById('reader-scroll-container').scrollTop = 0; } }
         function setReaderTheme(t) { const c = document.getElementById('pdf-canvas'); if(!c) return; c.className = ""; if(t !== 'original') c.classList.add('pdf-'+t); }
-        function toggleLoading(l) { document.getElementById('btn-spinner').classList.toggle('hidden', !l); document.getElementById('btn-text').innerText = l ? 'Validating...' : 'Next'; }
+        function toggleLoading(l) { document.getElementById('btn-spinner').classList.toggle('hidden', !l); document.getElementById('btn-text').innerText = l ? 'Verifying...' : 'Next'; }
         function showError(m) { const e = document.getElementById('login-error'); document.getElementById('error-message').innerText = m; e.classList.remove('hidden'); }
-        function copyUPI() { navigator.clipboard.writeText('rajesh@upi'); alert("Copied UPI ID."); }
-        function notifyAdmin() { window.open(`https://wa.me/911234567890?text=Activation Request Ref: ${document.getElementById('utr-input').value} User: ${userEmail}`, '_blank'); }
+        function copyUPI() { navigator.clipboard.writeText('rajesh@upi'); alert("Reference Copied."); }
+        function notifyAdmin() { window.open(`https://wa.me/911234567890?text=License Verification Request Ref: ${document.getElementById('utr-input').value} User: ${userEmail}`, '_blank'); }
         function handleLogout() { localStorage.clear(); location.reload(); }
         function handleSearch() { renderLibrary(document.getElementById('search-input').value); }
         function filterCategory(c) { document.getElementById('nav-home').click(); renderLibrary(c); }
