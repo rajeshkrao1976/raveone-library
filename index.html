@@ -43,7 +43,7 @@
                     <p id="error-message" class="font-bold"></p>
                 </div>
                 <div class="flex items-center justify-between">
-                    <p class="text-[10px] text-[#605e5c] font-bold uppercase tracking-wider italic">Secure GWS Auth v3.6</p>
+                    <p class="text-[10px] text-[#605e5c] font-bold uppercase tracking-wider italic">Secure GWS Auth v3.7</p>
                     <button onclick="handleLogin()" id="login-btn" class="ms-btn-primary px-10 py-2 flex items-center gap-2 text-sm shadow-sm transition-all active:scale-95">
                         <span id="btn-text">Next</span>
                         <i id="btn-spinner" data-lucide="loader-2" class="hidden spinner w-4 h-4 text-white"></i>
@@ -219,9 +219,9 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbzUWEz5nDSNe_W4zKRj9uYACXHpOwCSX8-KSP9pFSwAjYOUW0l1hOH2woDtbFG6oZDX/exec"; // PASTE YOUR URL HERE
         const ADMIN = "rajesh@raveone.in";
 
-        // PDF.js Global Initialization
-        const PDFJS = window['pdfjs-dist/build/pdf'];
-        PDFJS.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        // PDF.js Initialization (Using correct cdnjs global)
+        const pdfjsLib = window['pdfjs-dist/build/pdf'] || window['pdfjsLib'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         let CATALOG = [], BLOGS = [], authBooks = [], isSubscribed = false;
         let userEmail = localStorage.getItem('raveone_email') || '';
@@ -249,7 +249,8 @@
             if (email === ADMIN && !API_URL) {
                 CATALOG = [
                     { ID: "b1", Title: "Seva, Shraddha, Siddhi - eBook by Rajesh Krishnamurthy Rao", Price: 499, Category: "Wisdom", Color: "#0078d4", ReadingTime: "2.5h", Type: "Premium", Description: "Guide to character." },
-                    { ID: "b2", Title: "Vedic SRK Framework  - by Rajesh Krishnamurthy Rao", Price: 899, Category: "Business", Color: "#d83b01", ReadingTime: "4h", Type: "Premium", Description: "MSME Roadmap." }
+                    { ID: "b2", Title: "Vedic SRK Framework  - by Rajesh Krishnamurthy Rao", Price: 899, Category: "Business", Color: "#d83b01", ReadingTime: "4h", Type: "Premium", Description: "MSME Roadmap." },
+                    { ID: "b3", Title: "ISO 9001_ Simplified for MSMEs — A Practical Guide to Achieving Quality Excellence-", Price: 699, Category: "Business", Color: "#107c10", ReadingTime: "3.5h", Type: "Premium", Description: "ISO simplified." }
                 ];
                 authBooks = CATALOG.map(b => b.Title); isSubscribed = true;
             } else if(API_URL) {
@@ -322,7 +323,7 @@
             wrapper.innerHTML = '<div class="py-48 text-center text-[#a19f9d] text-[10px] font-bold uppercase tracking-widest animate-pulse">Initializing secure decryption...</div>';
 
             if(userEmail === ADMIN && !API_URL) {
-                wrapper.innerHTML = '<div class="bg-white p-20 border fluent-shadow max-w-sm text-center mx-auto mt-20 shadow-xl rounded"><i data-lucide="shield-check" class="mx-auto mb-4 text-emerald-500 w-12 h-12"></i><p class="font-bold">Admin Workspace Preview</p><p class="text-xs text-slate-500 mt-2">The interface is ready. Connect your backend to render the book contents.</p></div>';
+                wrapper.innerHTML = '<div class="bg-white p-20 border fluent-shadow max-w-sm text-center mx-auto mt-20 shadow-xl rounded"><i data-lucide="shield-check" class="mx-auto mb-4 text-emerald-500 w-12 h-12"></i><p class="font-bold">Admin Workspace Preview</p><p class="text-xs text-slate-500 mt-2">Interface verified. Connect backend to load production PDF data.</p></div>';
                 lucide.createIcons();
                 return;
             }
@@ -330,21 +331,24 @@
             try {
                 const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'fetchBook', email: userEmail, bookTitle: title }) });
                 const data = await resp.json();
+                
                 if(data.base64) {
-                    // Modern decoded binary generation
-                    const binStr = atob(data.base64);
-                    const bytes = new Uint8Array(binStr.length);
-                    for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+                    // Optimized decoding using modern browser method
+                    const binaryString = window.atob(data.base64);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
                     loadPDF(bytes);
                 } else { 
-                    alert("Unauthorized access or corrupted stream."); 
+                    alert("Unauthorized access or file missing in Google Drive."); 
                     closeReader(); 
                 }
-            } catch (err) { alert("Backend synchronization failed. Please refresh."); closeReader(); }
+            } catch (err) { alert("Backend synchronization failed. Please check your internet connection."); closeReader(); }
         }
 
         function loadPDF(bytes) {
-            PDFJS.getDocument({ data: bytes }).promise.then(doc => {
+            pdfjsLib.getDocument({ data: bytes }).promise.then(doc => {
                 pdfDoc = doc; 
                 document.getElementById('total-pages').innerText = doc.numPages;
                 const wrapper = document.getElementById('canvas-wrapper');
@@ -356,7 +360,11 @@
                 pageNum = parseInt(localStorage.getItem(`last_page_${userEmail}_${activeBookId}`)) || 1;
                 if (pageNum > pdfDoc.numPages) pageNum = 1;
                 renderPage(pageNum);
-            }).catch(e => { alert("Failed to initialize Reader Engine."); closeReader(); });
+            }).catch(e => { 
+                console.error("PDF.js Error:", e);
+                alert("Failed to initialize Reader Engine. The document might be corrupted."); 
+                closeReader(); 
+            });
         }
 
         function renderPage(num) {
@@ -381,23 +389,10 @@
             updateBookmarkIcon();
         }
 
-        // --- GLOBAL ACTION HELPERS ---
-        function openSubHub() { 
-            const modal = document.getElementById('sub-modal');
-            if(modal) modal.classList.remove('hidden'); 
-            lucide.createIcons();
-        }
-        function showView(v) { 
-            ['login-view','dashboard-view','reader-view'].forEach(id => document.getElementById(id)?.classList.add('hidden')); 
-            document.getElementById(v)?.classList.remove('hidden'); 
-            if(v==='dashboard-view') renderLibrary(); 
-        }
-        function switchContext(c, el) { 
-            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active')); 
-            if(el) el.classList.add('active');
-            document.getElementById('library-context').classList.toggle('hidden', c !== 'library');
-            document.getElementById('blog-context').classList.toggle('hidden', c !== 'blog');
-        }
+        // Global Controllers
+        function openSubHub() { document.getElementById('sub-modal').classList.remove('hidden'); lucide.createIcons(); }
+        function showView(v) { ['login-view','dashboard-view','reader-view'].forEach(id => document.getElementById(id)?.classList.add('hidden')); document.getElementById(v)?.classList.remove('hidden'); if(v==='dashboard-view') renderLibrary(); }
+        function switchContext(c, el) { document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active')); if(el) el.classList.add('active'); document.getElementById('library-context').classList.toggle('hidden', c !== 'library'); document.getElementById('blog-context').classList.toggle('hidden', c !== 'blog'); }
         function closeReader() { pdfDoc = null; showView('dashboard-view'); }
         function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
         function closePayment() { document.getElementById('payment-modal').classList.add('hidden'); }
@@ -408,7 +403,7 @@
         function prevPage() { if(pageNum > 1 && !pageRendering) { pageNum--; renderPage(pageNum); document.getElementById('reader-scroll-container').scrollTop = 0; } }
         function nextPage() { if(pdfDoc && pageNum < pdfDoc.numPages && !pageRendering) { pageNum++; renderPage(pageNum); document.getElementById('reader-scroll-container').scrollTop = 0; } }
         function setReaderTheme(t) { const c = document.getElementById('pdf-canvas'); if(!c) return; c.className = ""; if(t !== 'original') c.classList.add('pdf-'+t); }
-        function toggleLoading(l) { document.getElementById('btn-spinner').classList.toggle('hidden', !l); document.getElementById('btn-text').innerText = l ? 'Verifying...' : 'Next'; }
+        function toggleLoading(l) { document.getElementById('btn-spinner').classList.toggle('hidden', !l); document.getElementById('btn-text').innerText = l ? 'Validating...' : 'Next'; }
         function showError(m) { const e = document.getElementById('login-error'); document.getElementById('error-message').innerText = m; e.classList.remove('hidden'); }
         function copyUPI() { navigator.clipboard.writeText('rajesh@upi'); alert("Reference Copied."); }
         function notifyAdmin() { window.open(`https://wa.me/911234567890?text=License Verification Request Ref: ${document.getElementById('utr-input').value} User: ${userEmail}`, '_blank'); }
